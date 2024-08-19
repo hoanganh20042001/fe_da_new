@@ -1,0 +1,232 @@
+// ** React Imports
+import { Fragment, useState, useEffect } from 'react'
+
+// ** Third Party Components
+import Select from 'react-select'
+import { useForm, Controller } from 'react-hook-form'
+import { ArrowLeft, ArrowRight } from 'react-feather'
+import { useSelector, useDispatch } from 'react-redux'
+import axios from 'axios'
+// ** Utils
+import { selectThemeColors } from '@utils'
+
+// ** Reactstrap Imports
+import { Label, Row, Col, Button, Form, Table, CardText, Badge } from 'reactstrap'
+import FileUploaderSingle from './FileUploaderSingle'
+import { getListDataBySoftID } from '@store/action/dataset'
+
+// ** Styles
+import '@styles/react/libs/react-select/_react-select.scss'
+
+const defaultValues = {
+  lastName: '',
+  firstName: ''
+}
+
+const StepTest = ({ stepper, infoExp, changeInfo, info }) => {
+  // ** Hooks
+  const dispatch = useDispatch()
+  const [statusTrain, setSatusTrain] = useState(0)
+  const [checkbox1, setCheckBox1] = useState(true)
+  const [checkbox2, setCheckBox2] = useState(false)
+  const [displaySelect, setDisplay] = useState(false)
+  const [displayUpload, setDisplayUpload] = useState('none')
+  const [list, setList] = useState([])
+  const [train, setTrain] = useState(0)
+  const [idTest, setIdTest] = useState(0)
+
+  const dataDataset = useSelector((state) => {
+    return state.dataset.dataDataset
+  })
+  const [infoModel, setModel] = useState({
+    id: 1,
+    datasetdescription: '',
+    datasetfolderurl: '',
+    datasetname: '',
+    datasetowner: 1,
+    datasetsoftID: 1,
+    datasetsum: 1,
+    datasettype: 1,
+  })
+  // ** Hooks
+  const {
+    handleSubmit
+  } = useForm({ defaultValues })
+
+  const onSubmit = () => {
+    
+    const url = process.env.REACT_APP_API_URL
+    if (infoModel.id !== 1 && info.configid !== 1) {
+    axios.get(`${url}/experiment/start-test/?id_dataset=${infoModel.id}&id_paramsconfigs=${info.configid}`, {
+      headers: {
+        'content-type': 'application/json'
+        // Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+      }
+    }).then(response => {
+      setSatusTrain(1)
+      setIdTest(response.data.resultid)
+      console.log(response)
+    })
+  }
+  }
+  useEffect(() => {
+    dispatch(getListDataBySoftID({
+      pageSize: 10,
+      page: 1,
+      id_softlib: infoExp.expsoftwarelibid
+    }))
+
+  }, [dispatch, infoExp.expsoftwarelibid])
+  const HandleClick1 = () => {
+    setCheckBox1(true)
+    setCheckBox2(false)
+    setDisplay(false)
+    setDisplayUpload('none')
+  }
+  const HandleClick2 = () => {
+    setCheckBox1(false)
+    setCheckBox2(true)
+    setDisplay(true)
+    setDisplayUpload('block')
+  }
+  const handleOnChangeData = (value, pop) => {
+    const infoModel = JSON.parse(value)
+    setModel(infoModel)
+  }
+  const handleTest = () => {
+
+  }
+  const ChangeLisData = (dataDataset) => {
+    if (!dataDataset) {
+      return [] // hoặc giá trị mặc định khác nếu cần
+    }
+    const list = []
+    if (Array.isArray(dataDataset) && dataDataset.length !== 0) {
+    dataDataset.map(item => {
+      list.push({
+        value: JSON.stringify({
+          id: item.datasetid,
+          datasetdescription: item.datasetdescription,
+          datasetfolderurl: item.datasetfolderurl,
+          datasetname: item.datasetname,
+          datasetowner: item.datasetowner,
+          datasetsoftID: item.datasetsoftID,
+          datasetsum: item.datasetsum,
+          datasettype: item.datasettype,
+        }),
+        label: item.datasetname
+      })
+    })
+  }
+    return list
+  }
+  useEffect(() => {
+    if (statusTrain === 1) {
+      const intervalId = setInterval(() => {
+        const url = process.env.REACT_APP_API_URL
+        if (idTest !== 0) {
+        axios.get(`${url}/experiment/get-test-result/?id_test_result=${idTest}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            // Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          },
+        })
+        .then(response => {
+          // console.log(response)
+          if (response.data.resultaccuracy !== null) {
+            setTrain(response.data.resultaccuracy)
+            setSatusTrain(0)
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching test result:", error)
+        })
+      }
+      }, 1000) // call API every 5 seconds
+
+      return () => clearInterval(intervalId) // clean up the interval on component unmount
+    }
+  }, [statusTrain, idTest])
+  useEffect(() => {
+    const url = process.env.REACT_APP_API_URL
+    if (idTest !== 0) {
+    axios.get(`${url}/experiment/get_list_test_results/?id_exp=${idTest}`).then(response => {
+      setList(response.data)
+    })
+  }
+  }, [])
+  return (
+    <Fragment>
+      <div className='content-header'>
+        <h5 className='mb-0'>Chọn bộ dữ liệu test</h5>
+      </div>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <Row>
+          <Col md='8' className='mb-1'>
+            <Select
+              isMulti={false}
+              isClearable={false}
+              theme={selectThemeColors}
+              id={`language`}
+              options={ChangeLisData(dataDataset)}
+              className='react-select'
+              classNamePrefix='select'
+              isDisabled={true}
+              onChange={(e) => handleOnChangeData(e.value, "expdatasetid")}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col className='p-0' xl='4' style={{ marginLeft: '15px' }}>
+            <h6 className='mb-2'>Thông tin bộ dữ liệu: {infoModel.datasetname}</h6>
+            <CardText className='mb-25'>Loại: {infoModel.datasettype}</CardText>
+            <CardText className='mb-25'>Loại sự kiện: {infoModel.datasettype}</CardText>
+            <CardText className='mb-25'>Tổng số lượng mẫu: {infoModel.datasetsum}</CardText>
+          </Col>
+        </Row>
+        <Row>
+          <Col md='8' className='mb-1'>
+            <h5 className='fw-bold mb-0 me-1'>Accuracy: {train}</h5>
+          </Col>
+        </Row>
+        <Table responsive>
+          <thead>
+            <tr>
+              <th>Bộ dữ liệu test</th>
+              <th>Chuỗi Config</th>
+              <th>Accuracy</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              list.map(item => {
+                return (
+                  <tr >
+                    <td>{item.resulttestingdataset}</td>
+                    <td>{item.resultconfigid}</td>
+                    <td>{item.resultaccuracy}</td>
+                  </tr>
+                )
+              })
+            }
+          </tbody>
+        </Table>
+        <div className='d-flex justify-content-between'>
+          <Button type='button' color='primary' className='btn-prev' onClick={() => stepper.previous()}>
+            <ArrowLeft size={14} className='align-middle me-sm-25 me-0'></ArrowLeft>
+            <span className='align-middle d-sm-inline-block d-none'>Quay lại</span>
+          </Button>
+          <Button type='submit' color='primary' className='btn-next'>
+            <span className='align-middle d-sm-inline-block d-none' >Kiểm tra</span>
+          </Button>
+          <Button type='button' color='primary' className='btn-next' onClick={() => stepper.next()}>
+            <span className='align-middle d-sm-inline-block d-none'>Dự đoán</span>
+            <ArrowRight size={14} className='align-middle ms-sm-25 ms-0'></ArrowRight>
+          </Button>
+        </div>
+      </Form>
+    </Fragment>
+  )
+}
+
+export default StepTest
