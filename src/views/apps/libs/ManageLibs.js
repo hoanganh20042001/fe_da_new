@@ -12,7 +12,7 @@ import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
 import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
-import { getListLibs, updateLibs, deleteLibs, addLibs } from '@store/action/libs'
+import { get, update, dels, add } from '@store/action/diseases'
 import { toDateStringFormat1, toDateString } from '@utils'
 import style from './style.css'
 import Flatpickr from 'react-flatpickr'
@@ -36,6 +36,7 @@ import {
   Badge
 } from 'reactstrap'
 import { format } from 'prettier'
+import { getListUser } from '../../../redux/action/profile'
 
 // ** Bootstrap Checkbox Component
 const BootstrapCheckbox = forwardRef((props, ref) => (
@@ -65,35 +66,22 @@ const ManageLibs = () => {
     softwareliburl: '',
     softwarelibdescription: '',
   })
-  const handleCancel = () => {
-    setInfoadd({
-      softwarelibname: '',
-    softwareliburl: '',
-    softwarelibdescription: '',
-    })
-    setShowAdd(false)
-  }
   const [file, setFile] = useState()
   const [valErrors, setValErrors] = useState({
     softwarelibname: '',
     softwareliburl: '',
     softwarelibdescription: '',
   })
-  const dataLibs = useSelector((state) => {
-    return state.libs.dataLibs
+  const diseases = useSelector((state) => {
+    return state.diseases.diseases
   })
   useEffect(() => {
-    dispatch(getListLibs({
+    dispatch(get({
+      pageSize: 9,
       pageNumber: currentPage + 1
     }))
   }, [dispatch, currentPage])
-  // const status = {
-  //   1: { title: 'Current', color: 'light-primary' },
-  //   2: { title: 'Professional', color: 'light-success' },
-  //   3: { title: 'Rejected', color: 'light-danger' },
-  //   4: { title: 'Resigned', color: 'light-warning' },
-  //   5: { title: 'Applied', color: 'light-info' }
-  // }
+console.log(diseases)
   const {
     control,
     setError,
@@ -112,7 +100,7 @@ const ManageLibs = () => {
       softwarelibdescription: data.softwarelibdescription,
     })
   }
-  const roleID = JSON.parse(localStorage.getItem('userData'))
+  const role = localStorage.getItem('role_id')
   const handleUpdate = () => {
     if (infoData.softwarelibname.trim() !== '' && infoData.softwareliburl.trim() !== '') {
       dispatch(updateLibs(infoData))
@@ -142,11 +130,6 @@ const ManageLibs = () => {
         softwarelibname: '',
         softwareliburl: '',
         softwarelibdescription: '',
-      })
-      setInfoadd({
-        softwarelibname: '',
-      softwareliburl: '',
-      softwarelibdescription: '',
       })
     } else {
       let temp = valErrors
@@ -209,22 +192,28 @@ const ManageLibs = () => {
 
   const columns = [
     {
-      name: 'Tên thư viện',
+      name: 'STT',
       sortable: true,
       minWidth: '200px',
-      selector: row => row.softwarelibname,
+      selector: row => row.id,
     },
     {
-      name: 'Đường dẫn',
+      name: 'Tên bệnh',
       sortable: true,
       minWidth: '200px',
-      selector: row => row.softwareliburl,
+      selector: row => row.name,
     },
     {
-      name: 'Mô tả',
+      name: 'Tên tiếng anh',
       sortable: true,
       minWidth: '200px',
-      selector: row => row.softwarelibdescription,
+      selector: row => row.name_E
+    },
+    {
+      name: 'Ký hiệu',
+      sortable: true,
+      minWidth: '200px',
+      selector: row => row.symbol,
     },
     {
       name: 'Tác vụ',
@@ -234,7 +223,7 @@ const ManageLibs = () => {
           <div className='d-flex'>
 
             {
-              roleID.roleid === 3 ? <></> : <>
+              role === 3 ? <></> : <>
                 <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
                 <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
               </>
@@ -286,13 +275,12 @@ const ManageLibs = () => {
   const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
-    // Calculate total pages whenever dataLibs.count changes
-    const newTotalPages = Math.ceil(dataLibs.count / 10)
-    setTotalPages(newTotalPages)
-
-    // Reset to first page when adding new item
+    if (data.metadata) {
+    setTotalPages(data.metadata.total_pages)
+  }
+   
     setCurrentPage(0)
-  }, [dataLibs.count])
+  }, [diseases.count])
 
   const isFirstPage = currentPage === 0
   const isLastPage = currentPage === totalPages - 1
@@ -316,7 +304,7 @@ const ManageLibs = () => {
     nextLabel=''
     forcePage={currentPage}
     onPageChange={handlePagination}
-    pageCount={totalPages}
+    pageCount={diseases.metadata.total_pages}
     breakLabel='...'
     pageRangeDisplayed={1}
     marginPagesDisplayed={1}
@@ -337,14 +325,14 @@ const ManageLibs = () => {
     <Fragment>
       <Card>
         <CardHeader className='flex-md-row flex-column align-md-items-center align-items-start border-bottom'>
-          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH THƯ VIỆN</CardTitle>
+          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH BỆNH</CardTitle>
           <div className='d-flex mt-md-0 mt-1'>
-            {
-              roleID.roleid === 3 ? <></> : <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}>
+            {/* {
+              role === 'A' ? <></> : <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}>
                 <Plus size={15} />
                 <span className='align-middle ms-50'>Thêm thư viện</span>
               </Button>
-            }
+            } */}
 
           </div>
         </CardHeader>
@@ -360,7 +348,6 @@ const ManageLibs = () => {
               id='search-input'
               value={searchValue}
               onChange={handleFilter}
-              placeholder='Tìm kiếm tên thư viện'
             />
           </Col>
         </Row>
@@ -370,17 +357,17 @@ const ManageLibs = () => {
             pagination
             // selectableRows
             columns={columns}
-            paginationPerPage={10}
+            paginationPerPage={9}
             className='react-dataTable'
             sortIcon={<ChevronDown size={10} />}
             paginationComponent={CustomPagination}
             paginationDefaultPage={currentPage + 1}
             selectableRowsComponent={BootstrapCheckbox}
-            data={dataLibs.results}
+            data={diseases.data}
           />
         </div>
       </Card>
-      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg' backdrop="static">
+      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg'>
         <ModalHeader className='bg-transparent' toggle={() => setShowEdit(!showEdit)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
@@ -411,7 +398,7 @@ const ManageLibs = () => {
             </Col>
             <Col xs={12} className='text-center mt-2 pt-50'>
               {
-                roleID.roleid === 3 ? <></> : <Button type='submit' className='me-1' color='primary' onClick={e => setEdit(false)} style={{ display: edit === true ? 'inline-block' : 'none' }}>
+                role === 'A' ? <></> : <Button type='submit' className='me-1' color='primary' onClick={e => setEdit(false)} style={{ display: edit === true ? 'inline-block' : 'none' }}>
                   Chỉnh sửa
                 </Button>
               }
@@ -430,8 +417,8 @@ const ManageLibs = () => {
           </Row>
         </ModalBody>
       </Modal>
-      <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)} className='modal-dialog-centered modal-lg' backdrop="static">
-        <ModalHeader className='bg-transparent' toggle={handleCancel}></ModalHeader>
+      <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)} className='modal-dialog-centered modal-lg'>
+        <ModalHeader className='bg-transparent' toggle={() => setShowAdd(!showAdd)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
             <h1 className='mb-1'>Thêm thư viện</h1>
@@ -461,14 +448,14 @@ const ManageLibs = () => {
               <Button type='submit' className='me-1' color='primary' onClick={handleAdd} >
                 Thêm mới
               </Button>
-              <Button type='reset' color='secondary' outline onClick={handleCancel}>
+              <Button type='reset' color='secondary' outline onClick={() => setShowAdd(false)}>
                 Hủy
               </Button>
             </Col>
           </Row>
         </ModalBody>
       </Modal>
-      <Modal isOpen={showDelete} toggle={() => setShowDelete(!showDelete)} className='modal-dialog-centered modal-lg' backdrop="static">
+      <Modal isOpen={showDelete} toggle={() => setShowDelete(!showDelete)} className='modal-dialog-centered modal-lg'>
         <ModalHeader className='bg-transparent' toggle={() => setShowDelete(!showDelete)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>

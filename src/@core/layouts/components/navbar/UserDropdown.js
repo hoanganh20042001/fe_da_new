@@ -29,20 +29,20 @@ const UserDropdown = () => {
   const [userData, setUserData] = useState(null)
 
   //** ComponentDidMount
-  useEffect(() => {
-    if (isUserLoggedIn() !== null) {
-      setUserData(JSON.parse(localStorage.getItem('userData')))
-    }
-  }, [])
+  // useEffect(() => {
+  //   if (isUserLoggedIn() !== null) {
+  //     setUserData(JSON.parse(localStorage.getItem('userData')))
+  //   }
+  // }, [])
 
   //** Vars
-  const userAvatar = (userData && userData.avatar) || defaultAvatar
-
+  // const userAvatar = (userData && userData.avatar) || defaultAvatar
+  const full_name = localStorage.getItem('full_name')
   return (
     <UncontrolledDropdown tag='li' className='dropdown-user nav-item'>
       <DropdownToggle href='/' tag='a' className='nav-link dropdown-user-link' onClick={e => e.preventDefault()}>
         <div className='user-nav d-sm-flex d-none'>
-          <span className='user-name fw-bold' style={{color:'white', fontSize:'18px'}}>{(userData && userData['name']) || ''}</span>
+          <span className='user-name fw-bold' style={{color:'white', fontSize:'18px'}}>{full_name || ''}</span>
           {/* <span className='user-status'>{userData && userData.roleid === 3 ? 'Học viên' : userData.roleid === 2 ? 'Giáo viên' : 'Admin'}</span> */}
         </div>
         <Avatar img={defaultAvatar} imgHeight='40' imgWidth='40' status='online' />

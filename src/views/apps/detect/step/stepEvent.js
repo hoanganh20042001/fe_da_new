@@ -1,5 +1,5 @@
 // import { Link, } from 'react-router-dom'
-import { Fragment, useState, forwardRef, useEffect } from 'react'
+import { Fragment, useState, forwardRef, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { useNavigate, Link } from 'react-router-dom'
@@ -12,24 +12,16 @@ import Avatar from '@components/avatar'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { Eye, ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, Search, MoreVertical, X, ArrowLeft, Loader } from 'react-feather'
+import { Eye, ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, Search, MoreVertical, X, ArrowLeft, Loader, Upload, AlertCircle } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
-
+import Viewer from 'react-viewer'
+import { getById } from '@store/action/checks'
 import StatsHorizontal from '@components/widgets/stats/StatsHorizontal'
 
 
 // ** Reactstrap Imports
-import {
-  Row,
-  Col,
-  Card,
-  Input,
-  Label,
-  Button,
-  CardTitle,
-  CardHeader,
-} from 'reactstrap'
-
+import { Row, Col, Card, CardBody, CardHeader, CardTitle, Button, Form, FormGroup, Label, FormFeedback, Input, ListGroupItem, ListGroup, CardText } from 'reactstrap'
+import diseases from '../../../../redux/reducers/diseases'
 
 // ** Bootstrap Checkbox Component
 const BootstrapCheckbox = forwardRef((props, ref) => (
@@ -38,7 +30,7 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
   </div>
 ))
 
-const StepEvent = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
+const StepEvent = ({ stepper, cccd, data, status, changeInfo, changeData, changeStatus }) => {
   // ** States
   // const [modal, setModal] = useState(false)
   const [displaySelect, setDisplay] = useState(false)
@@ -49,9 +41,16 @@ const StepEvent = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
   const [filteredData, setFilteredData] = useState([])
   const [showEdit, setShowEdit] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
-  const [showAdd, setShowAdd] = useState(false)
-  const [infoData, setInfo] = useState({
-  })
+  const [showUpload, setShowUpload] = useState(true)
+  const [showDetect, setShowDetect] = useState(true)
+  const [showReport, setShowReport] = useState(false)
+  const [imageArray, setImageArray] = useState([{ src: "" }, { src: "" }])
+  const [check_id, setCheck_id] = useState(null)
+  const [fileName, setFileName] = useState('')
+  const [img, setImg] = useState('')
+  const [info, setInfo] = useState(false)
+  const [selectionBox, setSelectionBox] = useState(null)
+  const viewerRef = useRef(null)
   const onSubmit1 = () => {
     // if (Object.values(data).every(field => field.length > 0)) {
     stepper.next()
@@ -70,8 +69,73 @@ const StepEvent = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
   const handleDelete = () => {
     setShowDelete(false)
   }
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      console.log(file)
+      setImg(file)
+      const newImageUrl = URL.createObjectURL(file)
+      setImageArray((prevImages) => {
+        const newArray = [...prevImages]
+        // if (!prevImages[0].src) {
+        //   newArray[0] = { src: newImageUrl }
+        // } else if (!prevImages[1].src) {
+        //   newArray[1] = { src: newImageUrl }
+        // } else {
+        newArray[0] = { src: newImageUrl }
+        // }
+        return newArray
+      })
+    } else {
+      setFileName('')
+    }
+  }
+  const checks = useSelector((state) => state.checks.checks)
+  const handleDetect = () => {
+    // const detectedImage = "http://localhost:8000/files/?file_path=files%5Cimg%5Cloading.gif"// Replace this with your detection logic
+    const url = process.env.REACT_APP_API_URL
+    const data1 = new FormData()
+    data1.append('file', img)
+    axios.post(`${url}/result/${cccd}`, data1,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        },
+
+      }).then(response => {
+        setImageArray((prevImages) => {
+          console.log(response)
+          setCheck_id(response.data.check_id)
+          console.log(response.data.data.check_id)
+          dispatch(getById(response.data.data.check_id))
+          setShowUpload(false)
+          setShowDetect(false)
+          setShowReport(true)
+          setInfo(true)
+          changeStatus(false)
+          const newArray = [...prevImages]
+          newArray[1] = { src: `http://localhost:8000/files/?file_path=${response.data.data.detected_image_path}` } // Giả định rằng response chứa URL ảnh mới
+          return newArray
+        })
 
 
+      })
+      .catch(err => {
+        toast(
+          <div className='d-flex'>
+            <div className='me-1'>
+              <Avatar size='sm' color='danger' icon={<X size={12} />} />
+            </div>
+            <div className='d-flex flex-column'>
+              <h6>Có lỗi xảy ra!</h6>
+            </div>
+          </div>
+        )
+      })
+  }
+  const checkss = Array.isArray(checks.data) ? checks.data : []
+  console.log(checks)
   const onSubmit = data => {
     if (Object.values(data)) {
       return null
@@ -85,12 +149,16 @@ const StepEvent = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
       }
     }
   }
-  const languageOptions = [
-    { value: 1, label: '0.25' },
-    { value: 2, label: '0.5' },
-    { value: 3, label: '0.75' },
-  ]
-
+  console.log(status)
+  useEffect(() => {
+    console.log(status)
+    if (status) {
+      setImageArray([{ src: "" }, { src: "" }])
+      setInfo(false)
+      setShowDetect(true)
+      setShowUpload(true)
+    }
+  }, [status])
   const handleOnChangeSelect = (value, pop) => {
     changeInfo(value, pop)
     // console.log(infoDetect)
@@ -105,139 +173,14 @@ const StepEvent = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
   }
 
   // Tạo cột cho mỗi nhóm ảnh
-  const columns = [
-    {
-      name: 'Ảnh',
-      sortable: true,
-      minWidth: '200px',
-      selector: (row) => {
-        const url = process.env.REACT_APP_API_URL
-        return (
-          <div>
-            <img src={`${row.imgraw_url}`} style={{ width: '100px' }}></img>
-          </div>
-        )
-      },
-    },
-    {
-      name: 'Nôi dung chi tiết',
-      sortable: true,
-      minWidth: '200px',
-      selector: (row) => {
-        const url = process.env.REACT_APP_API_URL
-        return (
-          <div>
-            <p>{row.detail}</p>
-          </div>
-        )
-      },
-    }
-  ]
+
   const [isLoading, setIsLoading] = useState(false)
-  const handleSearch = (infoDetect) => {
 
-    setIsLoading(true)
-    console.log(infoDetect)
-    const url = process.env.REACT_APP_API_URL
-    axios.post(`${url}/obj-detector/?web_URL=${infoDetect.web_Url}&conf=${infoDetect.conf}&iou=${infoDetect.iou}&dtViolence=${infoDetect.dtViolence}&dtWeapon=${infoDetect.dtWeapon}&dtAccident=${infoDetect.dtAccident}`
-      , {
-        headers: {
-          'Content-Type': 'application/json',
-          // Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-        },
-
-      }).then(response => {
-        console.log(infoDetect)
-        console.log(response.data.data)
-        const objectArray = []
-        const data = response.data.data
-        // const n = images.length
-        // if (n % 2 === 0) {
-        //   // Trường hợp n là số chẵn, chia đôi mảng ảnh
-        //   for (let i = 0; i < n; i += 2) {
-        //     const img1 = images[i].imgraw_url
-        //     const img2 = images[i + 1].imgraw_url
-
-        //     const imageObject = {
-        //       img1: img1,
-        //       img2: img2,
-        //     }
-
-        //     objectArray.push(imageObject)
-        //   }
-        // } else {
-        //   // Trường hợp n là số lẻ, lấy n/2 phần tử đầu
-        //   const halfLength = Math.floor(n / 2)
-        //   for (let i = 0; i < halfLength; i++) {
-        //     const img1 = images[i].imgraw_url
-        //     const img2 = (i + halfLength < n) ? images[i + halfLength].imgraw_url : null
-
-        //     const imageObject = {
-        //       img1: img1,
-        //       img2: img2,
-        //     }
-
-        //     objectArray.push(imageObject)
-        //   }
-        // }
-
-        // console.log(objectArray)
-        changeData(data)
-        setIsLoading(false)
-      })
-      .catch(err => {
-        setIsLoading(false)
-        toast(
-          <div className='d-flex'>
-            <div className='me-1'>
-              <Avatar size='sm' color='danger' icon={<X size={12} />} />
-            </div>
-            <div className='d-flex flex-column'>
-              <h6>Có lỗi xảy ra!</h6>
-            </div>
-          </div>
-        )
-      })
-    // dispatch(getObj(infoDetect))
-    // console.log(dispatch)
-  }
   const [isTextVisible, setIsTextVisible] = useState(false)
   const handleClick = () => {
     setIsTextVisible(!isTextVisible)
   }
 
-  // ** Function to handle Pagination
-  const handlePagination = page => {
-    setCurrentPage(page.selected)
-    // dispatch(getListUser({
-    //   pageSize: 1,
-    //   pageNumber: page.selected + 1
-    // }))
-  }
-
-  // ** Custom Pagination
-  const CustomPagination = () => (
-    <ReactPaginate
-      previousLabel=''
-      nextLabel=''
-      forcePage={currentPage}
-      onPageChange={page => handlePagination(page)}
-      pageCount={data.totalPages}
-      breakLabel='...'
-      pageRangeDisplayed={2}
-      marginPagesDisplayed={2}
-      activeClassName='active'
-      pageClassName='page-item'
-      breakClassName='page-item'
-      nextLinkClassName='page-link'
-      pageLinkClassName='page-link'
-      breakLinkClassName='page-link'
-      previousLinkClassName='page-link'
-      nextClassName='page-item next-item'
-      previousClassName='page-item prev-item'
-      containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
-    />
-  )
 
   return (
     <Fragment>
@@ -249,109 +192,164 @@ const StepEvent = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
               <ArrowLeft size={14} className='align-middle me-sm-25 me-0'></ArrowLeft><span className='align-middle ms-50'>Quay lại</span>
             </Button>
           </div>
-          <div className='d-flex mt-md-0 mt-1'>
-            <Button className='justify-content-end cursor-pointer' size={17} color='primary' onClick={handleClick}>Mở hưỡng dẫn cấu hình</Button>
-
-          </div>
-          <div className='d-flex mt-md-0 mt-1'>
-            <Button className='ms-2' color='primary' onClick={() => handleSearch(infoDetect)}><Search size={15} /> <span className='align-middle ms-50'>Tìm kiếm</span> </Button>
-            {isLoading ? <Loader size={40} style={{ animation: 'spin 1s linear infinite' }} /> : <div></div>}
-          </div>
-        </CardHeader>
-        <Row className=' mx-0'>
-          <div >
-            {isTextVisible && (
-              <div >
-                <i>Bước 1: Nhập URL trang web mà bạn cần quét tìm.</i><br />
-                <i>Bước 2: Nhập ngưỡng confidence và ngưỡng iou. (Giá trị từ 0-1)</i><br />
-                <i>Bước 3: Chọn các đối tượng/sự kiện cần quét.</i><br />
-                <i>Bước 4: Nhấn tìm kiếm và chờ đợi.</i><br /><br />
-              </div>
-            )}
-          </div>
-        </Row>
-        <Row className='justify-content-end mx-0'>
-
-          <Col className='mb-1' md='4' sm='12'>
-            <Label className='form-label' for='city'>
-              Bạo lực
-            </Label>
-            <Select
-              isMulti={false}
-              isClearable={false}
-              theme={selectThemeColors}
-              placeholder={'Có'}
-              id={`language`}
-              // value={{ value: infoDetect.dtViolence, label: 'Có' }}
-              options={[{ value: true, label: 'Có' }, { value: false, label: 'Không' }]}
-              className='react-select'
-              classNamePrefix='select'
-              isDisabled={displaySelect}
-              onChange={(e) => handleOnChangeSelect(e.value, "dtViolence")}
-            />
-          </Col>
-          <Col className='mb-1' md='4' sm='12'>
-            <Label className='form-label' for='city'>
-              Vũ khí
-            </Label>
-            <Select
-              isMulti={false}
-              isClearable={false}
-              theme={selectThemeColors}
-              placeholder={'Có'}
-              id={`language`}
-              // value={{ value: infoDetect.dtWeapon, label: 'Có' }}
-              options={[{ value: true, label: 'Có' }, { value: false, label: 'Không' }]}
-              className='react-select'
-              classNamePrefix='select'
-              isDisabled={displaySelect}
-              onChange={(e) => handleOnChangeSelect(e.value, "dtWeapon")}
-            />
-          </Col>
-          <Col className='mb-1' md='4' sm='12'>
-            <Label className='form-label' for='city'>
-              Tai nạn
-            </Label>
-            <Select
-              isMulti={false}
-              isClearable={false}
-              theme={selectThemeColors}
-              placeholder={'Có'}
-              id={`language`}
-              // value={{ value: infoDetect.dtAccident, label: 'Có' }}
-              options={[{ value: true, label: 'Có' }, { value: false, label: 'Không' }]}
-              className='react-select'
-              classNamePrefix='select'
-              isDisabled={displaySelect}
-              onChange={(e) => handleOnChangeSelect(e.value, "dtAccident")}
-            />
-          </Col>
-        </Row>
-        <div className='react-dataTable react-dataTable-selectable-rows'>
-          <DataTable
-            noHeader
-            pagination
-            // selectableRows
-            columns={columns}
-            paginationPerPage={10}
-            className='react-dataTable'
-            sortIcon={<ChevronDown size={10} />}
-            paginationComponent={CustomPagination}
-            paginationDefaultPage={currentPage + 1}
-            selectableRowsComponent={BootstrapCheckbox}
-            data={data}
-            customStyles={{
-              rows: {
-                style: {
-                  minHeight: '150px',
+          {showUpload &&
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".png, .jpg, .jpeg"
+                style={{
+                  opacity: 0,
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 2,
+                  cursor: 'pointer',
+                  width: '100%',
+                  height: '100%',
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px 16px',
+                  // backgroundColor: '#007bff',
+                  // color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  zIndex: 1,
+                  position: 'relative',
+                }}
+              >
+                <Upload size={24} style={{ marginRight: '8px' }} /> Tải ảnh lên
+              </button>
+            </div>
+          }
+          {showDetect ? (
+            <div className='d-flex mt-md-0 mt-1'>
+              <Button className='ms-2' color='primary' onClick={handleDetect}><Search size={15} /> <span className='align-middle ms-50'>Tìm kiếm</span> </Button>
+              {isLoading ? <Loader size={40} style={{ animation: 'spin 1s linear infinite' }} /> : <div></div>}
+            </div>
+          ) : (
+            <Button className='ms-2' color='success' onClick={() => console.log('Button khác')} >
+              <FileText size={16} className='me-2' />
+              <span className='align-middle ms-50'>Xuất báo cáo</span>
+            </Button>
+          )}
+        </CardHeader>
+        <CardBody>
+          <Row style={{ backgroundColor: '#f0f0f0' }}>
+            <Col lg='8' >
+              <div id='container' className='container' style={{ height: '100%', width: '100%' }} />
+
+              <Viewer
+                noClose
+                visible={true}  // Always keep the viewer visible
+                images={imageArray}
+                activeIndex={imageArray[1].src ? 1 : 0}
+                noFooter={false}
+                noNavbar={false}
+                rotatable={true}
+                noToolbar={false}
+                changeable={true}
+                attribute={true}
+                scalable={false}
+                noImgDetails={false}
+                container={document.getElementById('container')}
+                className="viewer-container"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '15px', // Adds rounded corners
+                  display: 'flex',       // Use flexbox to center the image
+                  alignItems: 'center',  // Vertically centers the image
+                  justifyContent: 'center', // Horizontally centers the image
+                  overflow: 'hidden',    // Hides any part of the image that goes beyond the viewer bounds
+                  zIndex: 1000,
+                }}
+                zIndex={1050}
+              />
+
+            </Col>
+            <Col lg='4'>
+
+              <Row>
+                <FormGroup>
+                  <Label for="doctorComment">
+                    <Edit size={16} /> Nhận xét của bác sĩ
+                  </Label>
+                  <Input
+                    type="textarea"
+                    name="doctorComment"
+                    id="doctorComment"
+                    rows="3"
+                    placeholder="Nhập nhận xét của bác sĩ tại đây..."
+                  />
+                  <Button
+                    color="primary"
+                    className="mt-2"
+                  // onClick={handleSave}
+                  >
+                    Lưu
+                  </Button>
+                </FormGroup>
+              </Row>
+              <Row>
+                {info && <Card style={{ maxWidth: '320px', margin: 'auto' }}>
+                  <CardBody>
+                    <CardTitle tag="h5" style={{ textAlign: 'center' }}>Thông tin bệnh</CardTitle>
+                    <Card className="user-info-card shadow-sm" style={{ maxHeight: '130px', maxWidth: '300px', overflowY: 'auto' }}>
+                      <CardBody>
+                        <Row>
+                          {checkss.length > 0 ? (
+                            <>
+                              <ul>
+                                {checkss.map((check, index) => (
+                                  <li key={index}>
+                                    <strong>{check.name}</strong>
+                                    <p>- Độ chính xác: {check.accuracy}%</p>
+                                  </li>
+                                ))}
+                              </ul>
+                              <Button color="primary" className="d-flex align-items-center mt-2">
+                                <Eye size={16} className="me-2" />
+                                Xem chi tiết
+                              </Button>
+                            </>
+
+                          ) : (
+                            <CardText>Không có thông tin bệnh.</CardText>
+                          )}
+
+                        </Row>
+
+                      </CardBody>
+                    </Card>
+
+                  </CardBody>
+                </Card>
                 }
-              }
-            }}
-          />
-        </div>
+              </Row>
+
+            </Col>
+          </Row>
+        </CardBody>
       </Card>
+
+      <style>
+        {`
+          .react-viewer-inline {
+            min-height: 450px !important;
+          }
+        `}
+      </style>
 
     </Fragment>
   )

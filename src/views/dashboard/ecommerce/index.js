@@ -26,7 +26,7 @@ import axios from 'axios'
 import '@styles/react/libs/charts/apex-charts.scss'
 import '@styles/base/pages/dashboard-ecommerce.scss'
 
-import { getListUser, updateUser, deleteUser, getInfo } from '@store/action/profile'
+import { getListUser, updateUser, deleteUser, getInfo, getMe } from '@store/action/profile'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
@@ -48,7 +48,7 @@ const EcommerceDashboard = () => {
 
   const userData = JSON.parse(localStorage.getItem('userData'))
   useEffect(() => {
-    dispatch(getInfo(userData.id))
+    dispatch(getMe())
   }, [])
   const { colors } = useContext(ThemeColors)
   // ** vars
@@ -101,8 +101,8 @@ const EcommerceDashboard = () => {
           <RevenueReport primary={colors.primary.main} warning={colors.warning.main} />
         </Col>
       </Row>
-      {/* <Row className='match-height'>
-        <Col lg='8' xs='12'>
+      <Row className='match-height'>
+        {/* <Col lg='8' xs='12'>
           <CompanyTable />
         </Col>
         <Col lg='4' md='6' xs='12'>
@@ -116,9 +116,9 @@ const EcommerceDashboard = () => {
         </Col>
         <Col lg='4' md='6' xs='12'>
           <CardTransactions />
-        </Col>
+        </Col> */}
       </Row>
-       */}
+      
     </div >
   )
 }

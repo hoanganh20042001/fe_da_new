@@ -6,13 +6,14 @@ import { Navigate } from 'react-router-dom'
 import { getUserData, getHomeRouteForLoggedInUser } from '@utils'
 
 const PublicRoute = ({ children, route }) => {
+  const role_id = localStorage.getItem('role_id')
   if (route) {
     const user = getUserData()
 
     const restrictedRoute = route.meta && route.meta.restricted
 
-    if (user && restrictedRoute) {
-      return <Navigate to={getHomeRouteForLoggedInUser(user.role)} />
+    if (role_id && restrictedRoute) {
+      return <Navigate to={getHomeRouteForLoggedInUser(role_id)} />
     }
   }
 

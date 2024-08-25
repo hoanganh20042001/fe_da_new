@@ -20,7 +20,7 @@ import ProfileTwitterFeeds from './ProfileTwitterFeeds'
 import ProfileLatestPhotos from './ProfileLatestPhotos'
 import ProfileSuggestedPages from './ProfileSuggestedPages'
 import ProfileFriendsSuggestions from './ProfileFriendsSuggestions'
-import { getListUser, updateUser, deleteUser, getInfo } from '@store/action/profile'
+import { getListUser, updateUser, getMe } from '@store/action/profile'
 import { useSelector, useDispatch } from 'react-redux'
 
 // ** Styles
@@ -44,7 +44,7 @@ const Profile = () => {
   
   const user = JSON.parse(localStorage.getItem('userData'))
   useEffect(() => {
-    dispatch(getInfo(user.id))
+    dispatch(getMe)
   }, [dispatch])
   return (
     <Fragment>
@@ -53,13 +53,13 @@ const Profile = () => {
         <div id='user-profile'>
           <Row>
             <Col sm='12'>
-              <ProfileHeader data={dataUser} />
+              {/* <ProfileHeader data={dataUser} /> */}
             </Col>
           </Row>
           <section id='profile-info'>
             <Row>
               <Col lg={{ size: 12, order: 12 }} sm={{ size: 12 }} xs={{ order: 12 }}>
-                <ProfileAbout data={dataUser} />
+                {/* <ProfileAbout data={dataUser} /> */}
               </Col>
             </Row>
           </section>

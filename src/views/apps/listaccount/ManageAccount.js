@@ -2,7 +2,7 @@
 import { Fragment, useState, forwardRef, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
-
+import styled from 'styled-components'
 // ** Table Data & Columns
 import { data } from './data'
 import { Controller, useForm } from 'react-hook-form'
@@ -62,6 +62,7 @@ const ManageAccount = () => {
   const [picker, setPicker] = useState(new Date())
   const [object, setObject] = useState(true)
   const [edit, setEdit] = useState(true)
+  const [users, setUsers] = useState([])
   const [infoaddData, setInfoadd] = useState({
     id: '',
     email: null,
@@ -81,19 +82,8 @@ const ManageAccount = () => {
     usrdob: '',
     usrfaculty: ''
   })
-  const handleCancel = () => {
-    setInfoadd({
-    id: '',
-    email: null,
-    name: null,
-    password: null,
-    roleid: 3,
-    usrfullname: '',
-    usrdob: '',
-    usrfaculty: ''
-    })
-    setShowAdd(false)
-  }
+  
+
   const dataUser = useSelector((state) => {
     return state.profile.dataUser
   })
@@ -102,15 +92,15 @@ const ManageAccount = () => {
       pageSize: 10,
       pageNumber: currentPage + 1
     }))
-  }, [dispatch, currentPage, dataUser])
-  console.log(dataUser)
-  // const status = {
-  //   1: { title: 'Current', color: 'light-primary' },
-  //   2: { title: 'Professional', color: 'light-success' },
-  //   3: { title: 'Rejected', color: 'light-danger' },
-  //   4: { title: 'Resigned', color: 'light-warning' },
-  //   5: { title: 'Applied', color: 'light-info' }
-  // }
+  }, [dispatch, currentPage])
+  useEffect(() => {
+    if (Array.isArray(dataUser.data)) {
+      setUsers(dataUser.data)
+    } else {
+      console.error('Data is not in expected format:', dataUser.data)
+    }
+  }, [dataUser])
+
   const {
     control,
     setError,
@@ -180,16 +170,6 @@ const ManageAccount = () => {
   const handleAdd = () => {
     dispatch(addUser(infoaddData))
     setShowAdd(false)
-    setInfoadd({
-      id: '',
-      email: null,
-      name: null,
-      password: null,
-      roleid: 3,
-      usrfullname: '',
-      usrdob: '',
-      usrfaculty: ''
-      })
   }
   const handleDelet = () => {
     dispatch(deleteUser(infoData.id))
@@ -269,24 +249,32 @@ const ManageAccount = () => {
     }
     setInfoadd({ ...infoaddData, [pop]: data })
   }
+
   const columns = [
+    {
+      name: 'STT',
+      sortable: true,
+      minWidth: '50px',
+      maxWidth: '100px',
+      selector: (row, index) => index + 1,
+    },
     {
       name: 'Tên người dùng',
       sortable: true,
       minWidth: '200px',
-      selector: row => row.name,
+      selector: row => row.full_name,
     },
     {
       name: 'Email',
       sortable: true,
-      minWidth: '200px',
+      minWidth: '300px',
       selector: row => row.email,
     },
     {
-      name: 'Ngày tạo',
+      name: 'Ngày sinh',
       sortable: true,
-      minWidth: '150px',
-      selector: row => toDateString(row.joined_at)
+      minWidth: '200px',
+      selector: row => row.date_birth
     },
     {
       name: 'Trạng thái',
@@ -296,7 +284,8 @@ const ManageAccount = () => {
         return (
           row.is_active === true ? 'Hoạt động' : 'Đã khoá'
         )
-      }
+      },
+      // center: true,
     },
     {
       name: 'Loại tài khoản',
@@ -304,16 +293,19 @@ const ManageAccount = () => {
       minWidth: '150px',
       cell: (row) => {
         return (
-          row.roleid === 2 ? 'Giáo viên' : row.roleid === 3 ? 'Học viên' : 'Admin'
+          row.role === 'admin' ? 'Admin' : row.role === 'doctor' ? 'Bác sĩ' : 'Nhân viên'
         )
-      }
+      },
+      // center: true,
     },
     {
-      name: 'Ngày đăng nhập cuối',
+      name: 'Đăng nhập lần cuối',
       sortable: true,
       minWidth: '200px',
-      selector: row => toDateString(row.last_login)
+      selector: row => toDateString(row.last_login),
+      // center: true,
     },
+    
     {
       name: 'Tác vụ',
       allowOverflow: true,
@@ -330,7 +322,8 @@ const ManageAccount = () => {
       }
     }
   ]
-
+  const StyledCell = styled.div`
+  padding-left: 10px; /* Adjust padding as needed */`
   // ** Function to handle filter
   const handleFilter = e => {
     const value = e.target.value
@@ -338,8 +331,8 @@ const ManageAccount = () => {
 
     const status = {
       1: { title: 'Admin', color: 'light-primary' },
-      2: { title: 'Giáo viên', color: 'light-success' },
-      3: { title: 'Học viên', color: 'light-danger' },
+      2: { title: 'Bác sĩ', color: 'light-success' },
+      3: { title: 'Nhân viên', color: 'light-danger' },
     }
     const role = {
       0: { title: 'Professional', color: 'light-success' },
@@ -364,6 +357,14 @@ const ManageAccount = () => {
     // }))
   }
 
+  const customStyles = {
+    headCells: {
+      style: {
+        justifyContent: 'center',
+      },
+    },
+  }
+  
   // ** Custom Pagination
   const CustomPagination = () => (
     <ReactPaginate
@@ -371,7 +372,7 @@ const ManageAccount = () => {
       nextLabel=''
       forcePage={currentPage}
       onPageChange={page => handlePagination(page)}
-      pageCount={dataUser.totalPages}
+      pageCount={dataUser.metadata.total_pages}
       breakLabel='...'
       pageRangeDisplayed={2}
       marginPagesDisplayed={2}
@@ -412,7 +413,6 @@ const ManageAccount = () => {
               id='search-input'
               value={searchValue}
               onChange={handleFilter}
-               placeholder='Tìm kiếm người dùng'
             />
           </Col>
         </Row>
@@ -420,6 +420,7 @@ const ManageAccount = () => {
           <DataTable
             noHeader
             pagination
+            paginationServer
             // selectableRows
             columns={columns}
             paginationPerPage={10}
@@ -428,15 +429,16 @@ const ManageAccount = () => {
             paginationComponent={CustomPagination}
             paginationDefaultPage={currentPage + 1}
             selectableRowsComponent={BootstrapCheckbox}
-            data={dataUser.results}
+            data={users}
+            customStyles={customStyles}
           />
         </div>
       </Card>
-      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg' backdrop="static"> 
+      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg'>
         <ModalHeader className='bg-transparent' toggle={() => setShowEdit(!showEdit)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
-            <h1 className='mb-1'>Thông tin người dùng</h1>
+            <h1 className='mb-1'>Sửa thông tin người dùng</h1>
             <p>Cập nhật chi tiết thông tin</p>
           </div>
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
@@ -512,8 +514,8 @@ const ManageAccount = () => {
           </Row>
         </ModalBody>
       </Modal>
-      <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)}  className='modal-dialog-centered modal-lg' backdrop="static">
-        <ModalHeader className='bg-transparent' toggle={handleCancel}></ModalHeader>
+      <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)} className='modal-dialog-centered modal-lg'>
+        <ModalHeader className='bg-transparent' toggle={() => setShowAdd(!showAdd)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
             <h1 className='mb-1'>Thêm người dùng</h1>
@@ -522,35 +524,35 @@ const ManageAccount = () => {
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
             <Col md={12} xs={12}>
               <Label className='form-label' for='email'>
-                Email <span style={{ color: 'red' }}>*</span>
+                Email
               </Label>
               <Input id='email' type='text' autoComplete={false} value={infoaddData.email} onChange={(e) => handleOnChangeEmail(e.target.value, "email")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.email}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='nameUser'>
-                Tên người dùng <span style={{ color: 'red' }}>*</span>
+                Tên người dùng
               </Label>
               <Input id='nameUser' type='text' autoComplete={false} value={infoaddData.name} onChange={(e) => handleOnChangeAdd(e.target.value, "name")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.name}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='password'>
-                Mật khẩu <span style={{ color: 'red' }}>*</span>
+                Mật khẩu
               </Label>
               <Input id='pass' type='password' value={infoaddData.password} onChange={(e) => handleOnChangeAdd(e.target.value, "password")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.password}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='usrfullname'>
-                Tên đầy đủ <span style={{ color: 'red' }}>*</span>
+                Tên đầy đủ
               </Label>
               <Input id='usrfullname' type='text' value={infoaddData.usrfullname} onChange={(e) => handleOnChangeAdd(e.target.value, "usrfullname")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfullname}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='usrdob' >
-                Ngày sinh <span style={{ color: 'red' }}>*</span>
+                Ngày sinh
               </Label>
               <Flatpickr
                 value={picker}
@@ -565,7 +567,7 @@ const ManageAccount = () => {
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='register-password'>
-                Loại tài khoản <span style={{ color: 'red' }}>*</span>
+                Loại tài khoản
               </Label>
               <Input type='select' name='role' id='role' value={infoaddData.roleid} onChange={(e) => handleOnChangeAdd(e.target.value, "roleid")} readOnly={edit}>
                 <option value='3'>Học viên</option>
@@ -575,7 +577,7 @@ const ManageAccount = () => {
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='usrfaculty'>
-                Khoa <span style={{ color: 'red' }}>*</span>
+                Khoa
               </Label>
               <Input id='usrfaculty' type='text' value={infoaddData.usrfaculty} onChange={(e) => handleOnChangeAdd(e.target.value, "usrfaculty")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfaculty}</p>
@@ -584,14 +586,14 @@ const ManageAccount = () => {
               <Button type='submit' className='me-1' color='primary' onClick={handleAdd} disabled={isDisable()}>
                 Thêm mới
               </Button>
-              <Button type='reset' color='secondary' outline onClick={handleCancel}>
+              <Button type='reset' color='secondary' outline onClick={() => setShowAdd(false)}>
                 Hủy
               </Button>
             </Col>
           </Row>
         </ModalBody>
       </Modal>
-      <Modal isOpen={showAccept} toggle={() => setShowAccept(!showAccept)} className='modal-dialog-centered modal-lg' backdrop="static">
+      <Modal isOpen={showAccept} toggle={() => setShowAccept(!showAccept)} className='modal-dialog-centered modal-lg'>
         <ModalHeader className='bg-transparent' toggle={() => setShowAccept(!showAccept)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
@@ -610,7 +612,7 @@ const ManageAccount = () => {
           </Row>
         </ModalBody>
       </Modal>
-      <Modal isOpen={showDelete} toggle={() => setShowDelete(!showDelete)} className='modal-dialog-centered modal-lg' backdrop="static">
+      <Modal isOpen={showDelete} toggle={() => setShowDelete(!showDelete)} className='modal-dialog-centered modal-lg'>
         <ModalHeader className='bg-transparent' toggle={() => setShowDelete(!showDelete)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>

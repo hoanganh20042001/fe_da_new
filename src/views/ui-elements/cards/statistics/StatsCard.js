@@ -1,6 +1,6 @@
 // ** Third Party Components
 import classnames from 'classnames'
-import { TrendingUp, User, Box, DollarSign } from 'react-feather'
+import { User, Heart, Briefcase, Shield, Activity } from 'react-feather'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 // ** Custom Components
@@ -10,41 +10,50 @@ import Avatar from '@components/avatar'
 import { Card, CardHeader, CardTitle, CardBody, CardText, Row, Col } from 'reactstrap'
 
 const StatsCard = ({ cols }) => {
-  const [data, setData] = useState()
+  const [data, setData] = useState([])
   useEffect(() => {
     const url = process.env.REACT_APP_API_URL
-    axios.get(`${url}/thongke-role/`).then(
+    axios.get(`${url}/statistical/users`).then(
       res => {
-        const temp = res.data
-        console.log(temp)
-        setData([
-          {
-            title: temp.admin,
-            subtitle: 'Số admin',
-            color: 'light-primary',
-            icon: <TrendingUp size={24} />
-          },
-          {
-            title: temp.hocvien,
-            subtitle: 'Số học viên',
-            color: 'light-info',
-            icon: <User size={24} />
-          },
-          {
-            title: temp.giaovien,
-            subtitle: 'Số giáo viên',
-            color: 'light-danger',
-            icon: <Box size={24} />
+        const result = res.data.data
+        console.log(res.data.data)
+        if (Array.isArray(res.data.data)) {
+          
+          const temp = {
+            admin: result.find(item => item.role === 'A')?.count || 0,
+            bacsi: result.find(item => item.role === 'D')?.count || 0,
+            nhanvien: result.find(item => item.role === 'S')?.count || 0,
+            quannhan: result.find(item => item.role === 'P')?.count || 0,
           }
-          // {
-          //   title: '$9745',
-          //   subtitle: 'Revenue',
-          //   color: 'light-success',
-          //   icon: <DollarSign size={24} />
-          // }
-        ])
-      }
-    )
+          console.log('Processed Data:', temp)
+          setData([
+            {
+              title: temp.admin,
+              subtitle: 'Số admin',
+              color: 'light-primary',
+              icon: <User size={24} />
+            },
+            {
+              title: temp.bacsi,
+              subtitle: 'Số bác sĩ',
+              color: 'light-info',
+              icon: <Heart size={24} />
+            },
+            {
+              title: temp.nhanvien,
+              subtitle: 'Số nhân viên',
+              color: 'light-danger',
+              icon: <Briefcase size={24} />
+            },
+             {
+            title: temp.quannhan,
+            subtitle: 'Số quân nhân',
+            color: 'light-success',
+            icon: <Shield size={24} />
+          }
+          ])
+        }
+      })
   }, [])
 
   const renderData = () => {
@@ -54,7 +63,8 @@ const StatsCard = ({ cols }) => {
       return (
         <Col
           key={index}
-          {...cols}
+          sm="3"
+          // {...cols}
           className={classnames({
             [`mb-2 mb-${margin}-0`]: index !== data.length - 1
           })}
@@ -70,7 +80,7 @@ const StatsCard = ({ cols }) => {
       )
     })
   }
-
+  console.log(data)
   return (
     <Card className='card-statistics'>
       <CardHeader>

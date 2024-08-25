@@ -10,10 +10,10 @@ import Avatar from '@components/avatar'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { Eye, ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, Search, MoreVertical, X, ArrowLeft, ArrowRight  } from 'react-feather'
+import { Eye, ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, Search, MoreVertical, X, ArrowLeft, ArrowRight, User, Mail, Phone, Calendar, MapPin, Home, Droplet, Info, Briefcase, BarChart2, Activity, Clock, Shield, CreditCard } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
 import StatsHorizontal from '@components/widgets/stats/StatsHorizontal'
-
+import { getByCccd } from '@store/action/patients'
 
 // ** Reactstrap Imports
 import {
@@ -34,7 +34,14 @@ import {
   ModalBody,
   ModalHeader, ModalFooter,
   Badge,
-  Form
+  Form,
+  InputGroup,
+  FormFeedback,
+  FormGroup,
+  CardBody,
+  ListGroup,
+  ListGroupItem,
+  CardText
 } from 'reactstrap'
 import { useAbility } from '@casl/react'
 
@@ -45,23 +52,77 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
   </div>
 ))
 
-const StepConfig = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
+const StepConfig = ({ stepper, cccd, status, data, changeInfo, changeData, changeStatus }) => {
   // ** States
   // const [modal, setModal] = useState(false)
   const [displaySelect, setDisplay] = useState(false)
   const dispatch = useDispatch()
   const [currentPage, setCurrentPage] = useState(0)
-
+  const [isValid, setIsValid] = useState(true)
   // const [data, setData] = useState()
   const [object, setObject] = useState(true)
   const roleId = JSON.parse(localStorage.getItem('userData'))
 
+  const [searchTerm, setSearchTerm] = useState('')
+  const [patientss, setPatients] = useState({
+    full_name: '',
+    indentification:'',
+    email: '',
+    phone_number: '',
+    date_birth: '',
+    home_town: '',
+    resident: '',
+    medical_history: '',
+    blood_group: '',
+    sex: '',
+    height: '',
+    weight: '',
+    rank: '',
+    enlistment_date: ''
+  })
+  const [validationMessage, setValidationMessage] = useState('')
+  const [showFullInfo, setShowFullInfo] = useState(false)
+  const validateCccd = (value) => {
+    const cccdRegex = /^[0-9]{12}$/ // Định dạng CCCD là 12 chữ số
+    return cccdRegex.test(value)
+  }
+  const patients = useSelector((state) => state.patients.patients)
+  const handleSearch = () => {
+    if (validateCccd(searchTerm)) {
+      setIsValid(true)
+      // setValidationMessage('Số CCCD hợp lệ.')
+
+      dispatch(getByCccd(searchTerm)) // Correctly dispatching the action
+        .then(() => {
+          setValidationMessage('')
+          changeInfo(searchTerm)
+          // setPatients(patients.data)
+          // console.log(patients.data)
+          setShowFullInfo(true)
+          // setPatients(patients)
+          // console.log(patients.data.data)
+          // setPatients(patients.data)
+          changeStatus(true)
+
+        })
+        .catch((error) => {
+          console.error('Error fetching data:', error)
+          setValidationMessage('Đã xảy ra lỗi khi lấy dữ liệu.')
+        })
+    } else {
+      setIsValid(false)
+      setValidationMessage('Số CCCD phải là 12 chữ số.')
+    }
+  }
+  useEffect(() => {
+    setPatients(patients.data)
+  }, [patients])
   const [valErrors, setValErrors] = useState({
     web_Url: '',
     conf: '',
     iou: ''
   })
-
+  // const patientss = patients.data ? patients.data : {}
   const navigate = useNavigate()
 
   const onSubmit = data => {
@@ -92,14 +153,14 @@ const StepConfig = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
     // console.log(infoDetect)
   }
   const handleNext = () => {
-    if (infoDetect.web_Url === '' || infoDetect.conf === '' || infoDetect.iou === '') {
+    if (!showFullInfo) {
       toast(
         <div className='d-flex'>
           <div className='me-1'>
             <Avatar size='sm' color='danger' icon={<X size={12} />} />
           </div>
           <div className='d-flex flex-column'>
-            <h6>Không được để trống!</h6>
+            <h6>Yêu cầu thông tin người bệnh!</h6>
           </div>
         </div>
       )
@@ -107,7 +168,6 @@ const StepConfig = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
     }
     // handleOnChange(response.data.configid, 'configid')
     stepper.next()
-    console.log(infoDetect)
   }
   function isDisable() {
     const o = Object.keys(valErrors)
@@ -117,148 +177,153 @@ const StepConfig = ({ stepper, infoDetect, data, changeInfo, changeData }) => {
     else return false
   }
 
-
-  // Tạo cột cho mỗi nhóm ảnh
-  const columns = [
-    {
-      name: 'Ảnh',
-      sortable: true,
-      minWidth: '200px',
-      selector: (row) => {
-        const url = process.env.REACT_APP_API_URL
-        return (
-          <div>
-            <img src={`${row.imgraw_url}`} style={{ width: '100px'}}></img>
-          </div>
-        )
-      },
-    },
-    {
-      name: 'Nôi dung chi tiết',
-      sortable: true,
-      minWidth: '200px',
-      selector: (row) => {
-        const url = process.env.REACT_APP_API_URL
-        return (
-          <div>
-            <p>{row.detail}</p>
-          </div>
-        )
-      },
-    }
-  ]
-
-
-  // ** Function to handle Pagination
-  const handlePagination = page => {
-    setCurrentPage(page.selected)
-    // dispatch(getListUser({
-    //   pageSize: 1,
-    //   pageNumber: page.selected + 1
-    // }))
-  }
   const [isTextVisible, setIsTextVisible] = useState(false)
   const handleClick = () => {
     setIsTextVisible(!isTextVisible)
   }
-  // ** Custom Pagination
-  const CustomPagination = () => (
-    <ReactPaginate
-      previousLabel=''
-      nextLabel=''
-      forcePage={currentPage}
-      onPageChange={page => handlePagination(page)}
-    //   pageCount={dataFace.totalPages}
-      breakLabel='...'
-      pageRangeDisplayed={2}
-      marginPagesDisplayed={2}
-      activeClassName='active'
-      pageClassName='page-item'
-      breakClassName='page-item'
-      nextLinkClassName='page-link'
-      pageLinkClassName='page-link'
-      breakLinkClassName='page-link'
-      previousLinkClassName='page-link'
-      nextClassName='page-item next-item'
-      previousClassName='page-item prev-item'
-      containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
-    />
-  )
 
   return (
     <Fragment>
       <Card>
         <CardHeader className='card_detect flex-md-row flex-column align-md-items-center align-items-start border-bottom' >
-          {/* <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>Tìm kiếm</CardTitle> */}
-          <div className='d-flex mt-md-0 mt-1'>
-            <Button className='justify-content-end cursor-pointer' size={17} color='primary' onClick={handleClick}>Mở hưỡng dẫn cấu hình</Button>
+          <Col className='mb-1' md='6' sm='12'>
+            <Label className='form-label' for='web_Url' style={{ color: '#1203b1', fontWeight: 'bold', fontSize: '14px' }}>
+              Nhập căn cước công dân <span style={{ color: 'red' }}>*</span>
+            </Label>
+            {/* <Input id='web_Url' className=' mb-50' type='text' value={infoDetect.web_Url} onChange={(e) => handleOnChange(e.target.value, "web_Url")} /> */}
+            <Form inline>
+              <FormGroup className="mb-2 me-sm-2 mb-sm-0">
+                <div className="d-flex align-items-center">
+                  <Input
+                    type="text"
+                    placeholder="Nhập CCCD cần tìm kiếm..."
+                    value={searchTerm}
+                    invalid={!isValid}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <Button color="primary" onClick={handleSearch} className="ms-2">
+                    <Search size={14} />
+                  </Button>
+                </div>
+                <FormFeedback className="d-block">
+                  {validationMessage}
+                </FormFeedback>
+              </FormGroup>
+            </Form>
 
-          </div>
-          <div className='d-flex mt-md-0 mt-1'>
-            <Button className='ms-2' color='primary' onClick={() => handleNext()}><span className='align-middle ms-50'>Tiếp theo</span>
-            <ArrowRight size={14} className='align-middle ms-sm-25 ms-0'></ArrowRight>
-             </Button>
-          </div>
+          </Col>
+          <Col className='mb-1' md='2' sm='12'>
+
+            <Button className='ms-2' color='primary' style={{ marginTop: '1.5em' }} onClick={() => handleNext()}><span className='align-middle ms-50'>Tiếp theo</span>
+              <ArrowRight size={14} className='align-middle ms-sm-25 ms-0'></ArrowRight>
+            </Button>
+
+          </Col>
         </CardHeader>
-        <Row className=' mx-0'>
-          <div >
-            {isTextVisible && (
-              <div >
-                <i>Bước 1: Nhập URL trang web mà bạn cần quét tìm.</i><br />
-                <i>Bước 2: Nhập ngưỡng confidence và ngưỡng iou. (Giá trị từ 0-1)</i><br />
-                <i>Bước 3: Chọn các đối tượng/sự kiện cần quét.</i><br />
-                <i>Bước 4: Nhấn tìm kiếm và chờ đợi.</i><br /><br />
-              </div>
-            )}
-          </div>
+
+        <Row style={{ marginTop: '20px', marginRight: '2px', marginLeft: '2px', marginBottom: '30px', }}>
+          <Card style={{ maxWidth: '100%', margin: 'auto' }}>
+            <CardBody >
+              <CardTitle tag="h5" style={{ textAlign: 'center', marginTop: '12px' }}>Thông tin cá nhân</CardTitle>
+              <ListGroup style={{ height: '250px' }}>
+                {showFullInfo && (
+                  <>
+
+                    <Card className="user-info-card shadow-sm">
+                      <CardBody>
+                        <CardTitle tag="h5" className="text-primary">
+                          <User size={20} /> {patientss.full_name }
+                        </CardTitle>
+                        <Row>
+                          <Col md="6">
+                            <CardText>
+                              <CreditCard size={16} className="me-2 text-info" /> CCCD: {patientss ? patientss.full_name : ''}
+                            </CardText>
+                            <CardText>
+                              <Mail size={16} className="me-2 text-info" /> Email: {patientss ? patientss.email : ''}
+                            </CardText>
+                            <CardText>
+                              <Phone size={16} className="me-2 text-info" /> Số điện thoại: {patientss ? patientss.phone_number : ''}
+                            </CardText>
+                            <CardText>
+                              <Calendar size={16} className="me-2 text-info" /> Ngày sinh: {patientss ? patientss.date_birth : ''}
+                            </CardText>
+                            <CardText>
+                              <MapPin size={16} className="me-2 text-info" /> Quê quán: {patientss ? patientss.home_town : ''}
+                            </CardText>
+                            <CardText>
+                              <Home size={16} className="me-2 text-info" /> Nơi ở hiện nay: {patientss ? patientss.resident : ''}
+                            </CardText>
+                            <CardText>
+                              <Activity size={16} className="me-2 text-info" /> Lịch sử khám bệnh: {patientss ? patientss.medical_history : ''}
+                            </CardText>
+                          </Col>
+                          <Col md="6">
+                            <CardText>
+                              <Droplet size={16} className="me-2 text-info" /> Nhóm máu: {patientss ? patientss.blood_group : ''}
+                            </CardText>
+                            <CardText>
+                              <Info size={16} className="me-2 text-info" /> Giới tính: {patientss ? (patientss.sex ? 'Nam' : 'Nữ') : ''}
+                            </CardText>
+                            <CardText>
+                              <Briefcase size={16} className="me-2 text-info" /> Đơn vị: c155
+                            </CardText>
+                            <CardText>
+                              <BarChart2 size={16} className="me-2 text-info" /> Chiều cao: {patientss ? patientss.height : ''} cm
+                            </CardText>
+                            <CardText>
+                              <BarChart2 size={16} className="me-2 text-info" /> Cân nặng: {patientss ? patientss.weight : ''} kg
+                            </CardText>
+                            <CardText>
+                              <Shield size={16} className="me-2 text-info" /> Quân hàm: {patientss ? patientss.rank : ''}
+                            </CardText>
+                            <CardText>
+                              <Clock size={16} className="me-2 text-info" /> Thời gian khám gần nhất: {patientss ? patientss.enlistment_date : ''}
+                            </CardText>
+
+                          </Col>
+                        </Row>
+                      </CardBody>
+                    </Card>
+                    <style>
+                      {`
+          .user-info-card {
+            background-color: #f8f9fa; /* Màu nền nhẹ */
+            border-radius: 10px; /* Bo góc nhẹ */
+            border: 1px solid #ddd; /* Viền mỏng */
+          }
+
+          .user-info-card .text-info {
+            color: #17a2b8 !important; /* Màu xanh nhạt cho icon */
+          }
+
+          .user-info-card .card-title {
+            font-weight: bold;
+          }
+
+          .user-info-card .card-body {
+            padding: 1.5rem;
+          }
+
+          .user-info-card .card-text {
+            font-size: 0.95rem;
+            color: #333;
+          }
+
+          .user-info-card .me-2 {
+            margin-right: 0.5rem;
+          }
+        `}
+                    </style>
+                  </>
+                )}
+              </ListGroup>
+            </CardBody>
+          </Card>
+
+
         </Row>
-        <Row className=' mx-0'>
-        {/* <Form onSubmit={onSubmit1}> */}
-          <Col className='mb-1' md='4' sm='12'>
-            <Label className='form-label' for='web_Url'>
-              Đường dẫn trang web cần tìm kiếm <span style={{color: 'red'}}>*</span>
-            </Label>
-            <Input id='web_Url' className=' mb-50' type='text' value={infoDetect.web_Url} onChange={(e) => handleOnChange(e.target.value, "web_Url")} />
-          </Col>
-          <Col md='2' ></Col>
-          <Col className='mb-1' md='3' sm='12'>
-            <Label className='form-label' for='conf'>
-              Ngưỡng confidence( Từ 0 đến 1 ) <span style={{color: 'red'}}>*</span>
-            </Label>
-            <Input id='conf' className='dataTable-filter mb-50' type='text' value={infoDetect.conf} onChange={(e) => handleOnChange(e.target.value, "conf")} />
-          </Col>
-          <Col className='mb-1' md='3' sm='12'>
-            <Label className='form-label' for='iou'>
-              Ngưỡng iou( Từ 0 đến 1 ) <span style={{color: 'red'}}>*</span>
-            </Label>
-            <Input id='iou' className='dataTable-filter mb-50' type='text' value={infoDetect.iou} onChange={(e) => handleOnChange(e.target.value, "iou")} />
-          </Col>
-{/* </Form> */}
-        </Row>
-        <div className='react-dataTable react-dataTable-selectable-rows'>
-          <DataTable
-            noHeader
-            pagination
-            // selectableRows
-            columns={columns}
-            paginationPerPage={10}
-            className='react-dataTable'
-            sortIcon={<ChevronDown size={10} />}
-            paginationComponent={CustomPagination}
-            paginationDefaultPage={currentPage + 1}
-            selectableRowsComponent={BootstrapCheckbox}
-            data={data}
-            customStyles={{
-              rows: {
-                style: {
-                  minHeight: '150px',
-                  display: 'flex',
-                  alignItems: 'center'
-                }
-              }
-            }}
-          />
-        </div>
+
       </Card>
 
     </Fragment>

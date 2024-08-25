@@ -37,7 +37,8 @@ const ClassUser = lazy(() => import('../../views/apps/classuser'))
 const Request = lazy(() => import('../../views/apps/request'))
 
 const Libs = lazy(() => import('../../views/apps/libs'))
-
+const Units = lazy(() => import('../../views/apps/units'))
+const Histories = lazy(() => import('../../views/apps/histories'))
 const AppRoutes = [
   {
     element: <Email />,
@@ -128,6 +129,10 @@ const AppRoutes = [
     path: '/apps/search'
   },
   {
+    element: <Histories />,
+    path: '/apps/histories'
+  },
+  {
 
     element: <Models />,
     path: '/apps/model'
@@ -147,6 +152,10 @@ const AppRoutes = [
   {
     element: <Libs />,
     path: '/apps/libs'
+  },
+  {
+    element: <Units />,
+    path: '/apps/units'
   },
   {
     element: <InvoiceList />,

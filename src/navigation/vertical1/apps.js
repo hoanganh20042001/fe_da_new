@@ -1,12 +1,18 @@
 // ** Icons Import
-import { Book, Box, Cpu, Monitor, BarChart2, Circle, ShoppingCart, User, Shield, Activity, Database, Users } from 'react-feather'
+import { Book, Box, Cpu, Monitor, BarChart2, Circle, ShoppingCart, User, Shield, Activity, Database, Users, Home, Clock, Heart } from 'react-feather'
 
 export default [
   {
-    id: 'invoiceApp',
-    title: 'Bài thí nghiệm',
-    icon: <Activity size={20} />,
-    navLink: '/apps/invoice/list'
+    id: 'stastic',
+    title: 'Thống kê',
+    icon: <BarChart2 size={20} />,
+    navLink: '/dashboard/ecommerce'
+  },
+  // {
+  //   id: 'invoiceApp',
+  //   title: 'Bài thí nghiệm',
+  //   icon: <Activity size={20} />,
+  //   navLink: '/apps/invoice/list'
     // children: [
     //   {
     //     id: 'invoiceList',
@@ -33,6 +39,12 @@ export default [
     //     navLink: '/apps/invoice/add'
     //   }
     // ]
+  // },
+  {
+    id: 'dataUnits',
+    title: 'Đơn vị',
+    icon: <Home size={20} />,
+    navLink: '/apps/units'
   },
   {
     id: 'dataAcount',
@@ -42,35 +54,48 @@ export default [
   },
   {
     id: 'dataLibs',
-    title: 'Thư viện',
-    icon: <Book size={20} />,
+    title: 'Bệnh lý',
+    icon: <Activity size={20} />,
     navLink: '/apps/libs'
   },
   {
     id: 'dataApp',
-    title: 'Bộ dữ liệu',
-    icon: <Database size={20} />,
+    title: 'Quân nhân',
+    icon: <Shield size={20} />,
     navLink: '/apps/data/list'
   },
   
-  {
-    id: 'dataModel',
-    title: 'Mô hình',
-    icon: <Cpu size={20} />,
-    navLink: '/apps/model'
-  },
-  {
-    id: 'stastic',
-    title: 'Thống kê',
-    icon: <BarChart2 size={20} />,
-    navLink: '/dashboard/ecommerce'
-  },
+  // {
+  //   id: 'dataModel',
+  //   title: 'Lịch sử khám bệnh',
+  //   icon: <Clock size={20} />,
+  //   navLink: '/apps/model'
+  // },
   {
     id: 'adminurrl',
-    title: 'Admin url Phising',
-    icon: <Shield size={20} />,
-    navLink: '/admin/',
-    externalLink: true
+    title: 'Khám bệnh',
+    icon: <Heart size={20} />,
+    // navLink: '/apps/detect',
+    children: [
+        {
+          id: 'invoiceList',
+          title: 'Khám bệnh',
+          icon: <Circle size={12} />,
+          navLink: '/apps/detect'
+        },
+        {
+          id: 'invoiceEdit',
+          title: 'Lịch sử khám bệnh',
+          icon: <Clock size={12} />,
+          navLink: '/apps/histories'
+        },
+        // {
+        //   id: 'invoiceAdd',
+        //   title: 'Add',
+        //   icon: <Circle size={12} />,
+        //   navLink: '/apps/invoice/add'
+        // }
+      ]
   },
   // {
   //   id: 'email',

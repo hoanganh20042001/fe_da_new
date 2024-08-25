@@ -8,16 +8,31 @@ import { Card, CardTitle, CardText, CardBody, Row, Col } from 'reactstrap'
 const Earnings = ({ success }) => {
   const [list, setList] = useState([])
   useEffect(() => {
-    const url = process.env.REACT_APP_API_URL
-    axios.get(`${url}/experiment/get-sum-exps/`)
-      .then(responsive => {
-        const list = []
-        const temp = responsive.data.data
-        temp.list_sum_by_sortlib.map(item => {
-          list.push(item.number)
-        })
-        setList(list)
-      })
+    // const url = process.env.REACT_APP_API_URL
+    // axios.get(`${url}/experiment/get-sum-exps/`)
+    //   .then(responsive => {
+    //     const list = []
+    //     const temp = responsive.data.data
+    //     temp.list_sum_by_sortlib.map(item => {
+    //       list.push(item.number)
+    //     })
+    //     setList(list)
+    //   })
+    const fakeData = {
+      data: {
+        list_sum_by_sortlib: [
+          { number: 120 },
+          { number: 150 },
+          { number: 90 }
+        ]
+      }
+    }
+
+    const list = []
+    fakeData.data.list_sum_by_sortlib.map(item => {
+      list.push(item.number)
+    })
+    setList(list)
   }, [])
   const options = {
     chart: {

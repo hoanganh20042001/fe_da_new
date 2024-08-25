@@ -13,7 +13,7 @@ import DataTable from 'react-data-table-component'
 import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
 import { toDateString } from '@utils'
-import { getListData, updateData, addData, deleteData } from '@store/action/dataset'
+import { get, update, add, del } from '@store/action/patients'
 
 // ** Reactstrap Imports
 import {
@@ -43,6 +43,7 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
 ))
 
 const ManageData = () => {
+  const role = localStorage.getItem('role_id')
   // ** States
   // const [modal, setModal] = useState(false)
   const dispatch = useDispatch()
@@ -54,7 +55,6 @@ const ManageData = () => {
   const [showAdd, setShowAdd] = useState(false)
   const [infoData, setInfo] = useState({
   })
-  const [statusValue, setStatusValue] = useState('')
   const [object, setObject] = useState(true)
   const roleId = JSON.parse(localStorage.getItem('userData'))
   const [infoaddData, setInfoadd] = useState({
@@ -62,7 +62,7 @@ const ManageData = () => {
     datasettype: 0,
     datasetfolderurl: '',
     datasetsoftID: 1,
-    datasetsum: 1,
+    datasetsum: 0,
     datasetdescription: ''
   })
   const [file, setFile] = useState()
@@ -70,23 +70,17 @@ const ManageData = () => {
     datasetname: '',
     datasetsum: '',
   })
-  const dataDataset = useSelector((state) => {
-    return state.dataset.dataDataset
+  const patients = useSelector((state) => {
+    return state.patients.patients
   })
   // console.log(dataDataset)
   useEffect(() => {
-    dispatch(getListData({
-      pageSize: 10,
+    dispatch(get({
+      pageSize: 7,
       page: currentPage + 1
     }))
   }, [dispatch, currentPage])
-  // const status = {
-  //   1: { title: 'Current', color: 'light-primary' },
-  //   2: { title: 'Professional', color: 'light-success' },
-  //   3: { title: 'Rejected', color: 'light-danger' },
-  //   4: { title: 'Resigned', color: 'light-warning' },
-  //   5: { title: 'Applied', color: 'light-info' }
-  // }
+
   const {
     control,
     setError,
@@ -99,23 +93,12 @@ const ManageData = () => {
   const handleDelete = () => {
     dispatch(deleteData(infoData.datasetid))
     setShowDelete(false)
-    setCurrentPage(0)
   }
 
   const handleUpdate = () => {
-    if (infoData.datasetsum  > 0 && infoData.datasetsum !== undefined && infoData.datasetname.trim() !== '') {
-      const result = dispatch(updateData(infoData, file))
-      .then(result => {
-        console.log(result)
-        if (result === 1) {
-          setShowEdit(false)
-          // setEdit(true)
-        } else {
-          setShowEdit(true)
-          // setEdit(false)
-        }
-      })
-      // setShowEdit(false)
+    if (infoData.datasetsum !== undefined && infoData.datasetname.trim() !== '') {
+      dispatch(updateData(infoData, file))
+      setShowEdit(false)
       setValErrors({
         datasetsum: '',
         datasetname: '',
@@ -123,65 +106,30 @@ const ManageData = () => {
     } else {
       let temp = valErrors
       if (infoData.datasetname.trim() === '' || infoData.datasetname === undefined) { temp = { ...temp, datasetname: 'Không được để trống tên' } } 
-      if (!file) {
-        temp = { ...temp, salary: 'Bắt buộc phải upload file' }
-      }
-      if (infoaddData.datasetsum <= 0) {
-        temp = { ...temp, datasetsum: 'Giá trị phải dương' }
-      }
       setValErrors(temp)
     }
-    setCurrentPage(0)
+   
   }
   const handleAdd = () => {
-    // if (!file) {
-    //   setValErrors({ ...valErrors, salary: 'Bắt buộc phải upload file' })
-    //   return
-    // } 
-    console.log('file: ', file)
-    if (infoaddData.datasetsum > 0 && infoaddData.datasetsum !== undefined && infoaddData.datasetname.trim() !== '' && file) {
+    if (infoaddData.datasetsum !== undefined && infoaddData.datasetname.trim() !== '') {
       dispatch(addData(infoaddData, file))
-      .then(result => {
-        console.log(result)
-        if (result === 1) {
-          setShowAdd(false)
-          setInfoadd({
-            datasetname: '',
-            datasettype: 0,
-            datasetfolderurl: '',
-            datasetsoftID: 1,
-            datasetsum: 0,
-            datasetdescription: '',
-            salary: null,
-            
-        })
-        setFile(null)
-        setValErrors({
-            datasetsum: '',
-            datasetname: '',
-            salary: '',
-        })
-          // setEdit(true)
-        } else {
-          setShowAdd(true)
-          // setEdit(false)
-        }
+      setShowAdd(false)
+      setValErrors({
+        datasetsum: '',
+        datasetname: '',
       })
-    
-  } else {
-      let temp = { ...valErrors }
-      if (infoaddData.datasetname.trim() === '' || infoaddData.datasetname === undefined) {
-          temp = { ...temp, datasetname: 'Không được để trống tên' }
-      } 
-      if (!file) {
-          temp = { ...temp, salary: 'Bắt buộc phải upload file' }
-      }
-      if (infoaddData.datasetsum <= 0) {
-        temp = { ...temp, datasetsum: 'Giá trị phải dương' }
-      }
+      setInfoadd({datasetname: '',
+      datasettype: 0,
+      datasetfolderurl: '',
+      datasetsoftID: 1,
+      datasetsum: 0,
+      datasetdescription: ''})
+    } else {
+      let temp = valErrors
+      if (infoaddData.datasetname.trim() === '' || infoaddData.datasetname === undefined) { temp = { ...temp, datasetname: 'Không được để trống tên' } } 
       setValErrors(temp)
-  }
-  
+    }
+
     
   }
   const handleDelet = (data) => {
@@ -196,26 +144,11 @@ const ManageData = () => {
     })
     setShowDelete(true)
   }
-  const handleCancel = () => {
-    setInfoadd({
-      datasetname: '',
-      datasettype: 0,
-      datasetfolderurl: '',
-      datasetsoftID: 1,
-      datasetsum: 0,
-      datasetdescription: ''
-    })
-    setShowAdd(false)
-  }
   const handleHistory = (data) => {
     navigate(`/managements/userHistory/${data}`)
   }
-  
+
   const onSubmit = data => {
-    // if (!file) {
-    //   setValErrors({ ...valErrors, salary: 'Bắt buộc phải upload file' })
-    //   return
-    // } 
     if (Object.values(data)) {
       return null
     } else {
@@ -238,132 +171,78 @@ const ManageData = () => {
       datasetfolderurl: data.datasetfolderurl,
       datasetsoftID: data.datasetsoftID,
       datasetsum: data.datasetsum,
-      datasetdescription: data.datasetdescription,
     })
-   
-  }
-
-  const handleStatusValue = val => {
-    setStatusValue(val)
-    setSearchValue('')
-    dispatch(getListData({
-      pageSize: 10,
-      page: currentPage + 1,
-      type: val
-    }))
   }
   const handleOnChange = (data, pop) => {
-    if (data === null || data === undefined || data === "") {
-      setValErrors(prevValErrors => ({ ...prevValErrors, [pop]: 'Không được để trống' }))
-  } else if (parseFloat(data) <= 0) {
-      setValErrors(prevValErrors => ({ ...prevValErrors, [pop]: 'Giá trị phải dương' }))
-  } else {
-      setValErrors(prevValErrors => ({ ...prevValErrors, [pop]: null }))
-  }
     setInfo({ ...infoData, [pop]: data })
   }
-  // function isDisable() {
-  //   const o = Object.keys(valErrors)
-  //     .filter((k) => valErrors[k] !== null)
-  //     .reduce((a, k) => ({ ...a, [k]: valErrors[k] }), {})
-  //   if (Object.entries(o).length !== 0) return true
-  //   else return false
-  // }
   function isDisable() {
-    return Object.values(valErrors).some((error) => error !== null && error !== '')
+    const o = Object.keys(valErrors)
+      .filter((k) => valErrors[k] !== null)
+      .reduce((a, k) => ({ ...a, [k]: valErrors[k] }), {})
+    if (Object.entries(o).length !== 0) return true
+    else return false
   }
-
-  // const handleOnChangeAdd = (data, pop) => {
-  //   if (data === null || data === undefined || data === "") {
-  //     setValErrors({ ...valErrors, [pop]: 'Không được để trống' })
-  //   } else {
-  //     setValErrors({ ...valErrors, [pop]: null })
-  //   }
-  //   setInfoadd({ ...infoaddData, [pop]: data })
-  // }
   const handleOnChangeAdd = (data, pop) => {
-    console.log("data: ", data)
     if (data === null || data === undefined || data === "") {
-        setValErrors(prevValErrors => ({ ...prevValErrors, [pop]: 'Không được để trống' }))
-    } else if (parseFloat(data) <= 0) {
-        setValErrors(prevValErrors => ({ ...prevValErrors, [pop]: 'Giá trị phải dương' }))
+      setValErrors({ ...valErrors, [pop]: 'Không được để trống' })
     } else {
-        setValErrors(prevValErrors => ({ ...prevValErrors, [pop]: null }))
+      setValErrors({ ...valErrors, [pop]: null })
     }
-
-    setInfoadd(prevInfoaddData => ({ ...prevInfoaddData, [pop]: data }))
-}
-
-  const handleFileChange = (e) => {
-    const uploadedFile = e.target.files[0]
-    // console.log("uploadedFile: ", uploadedFile)
-    if (!uploadedFile) {
-        setValErrors({ ...valErrors, salary: 'Bắt buộc phải upload file' })
-    } else {
-        setValErrors({ ...valErrors, salary: null })
-        setFile(uploadedFile)
-    }
+    setInfoadd({ ...infoaddData, [pop]: data })
   }
 
   const columns = [
     {
-      name: 'Tên bộ dữ liệu',
+      name: 'Tên quân nhân',
       sortable: true,
       minWidth: '200px',
-      selector: row => row.datasetname,
+      selector: row => row.full_name,
     },
     {
-      name: 'Ngày tạo',
+      name: 'CCCD',
       sortable: true,
       minWidth: '100px',
-      selector: row => toDateString(row.datasetcreatedtime)
+      selector: row => row.identification
     },
     {
-      name: 'Người tạo',
+      name: 'Ngày sinh',
       sortable: true,
       minWidth: '50px',
-      selector: row => row.datasetowner_name
+      selector: row => toDateString(row.date_birth)
     },
     {
-      name: 'Bài toán',
+      name: 'Giới tính',
       sortable: true,
       minWidth: '150px',
       cell: (row) => {
         return (
-          row.datasetsoftID === 1 ? 'Nhận diện khuôn mặt' : row.datasetsoftID === 2 ? 'Nhận dạng sự kiện bất thường' : 'Phát hiện khuôn mặt'
+          row.sex === true ? 'Nam' : 'Nữ'
         )
       }
     },
     {
-      name: 'Loại dữ liệu',
+      name: 'Quân hàm',
       sortable: true,
       minWidth: '150px',
-      cell: (row) => {
-        return (
-          row.datasettype === 0 ? 'Private' : 'Public'
-        )
-      }
+      selector: row => row.rank
     },
 
     {
-      name: 'Số lượng mẫu',
+      name: 'Đơn vị',
       sortable: true,
       minWidth: '150px',
-      selector: row => row.datasetsum
+      selector: row => row.unit_id
     },
     {
       name: 'Tác vụ',
       allowOverflow: true,
       cell: (row) => {
         return (
-          <>
-          { 
-          JSON.parse(localStorage.getItem('userData')).roleid === 3 ? <></> : <div className='d-flex'>
+          <div className='d-flex'>
             <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
             <Trash size={15} onClick={() => handleDelet(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
           </div>
-          }
-        </>
         )
       }
     }
@@ -411,10 +290,10 @@ const ManageData = () => {
       nextLabel=''
       forcePage={currentPage}
       onPageChange={page => handlePagination(page)}
-      pageCount={dataDataset.totalPages}
+      pageCount={patients.metadata.total_pages}
       breakLabel='...'
-      pageRangeDisplayed={1}
-      marginPagesDisplayed={1}
+      pageRangeDisplayed={2}
+      marginPagesDisplayed={2}
       activeClassName='active'
       pageClassName='page-item'
       breakClassName='page-item'
@@ -432,7 +311,7 @@ const ManageData = () => {
     <Fragment>
       <Card>
         <CardHeader className='flex-md-row flex-column align-md-items-center align-items-start border-bottom'>
-          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH BỘ DỮ LIỆU</CardTitle>
+          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH QUÂN NHÂN</CardTitle>
           <div className='d-flex mt-md-0 mt-1'>
             {
                <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}> <Plus size={15} /> <span className='align-middle ms-50'>Thêm bộ dữ liệu</span> </Button> 
@@ -451,29 +330,14 @@ const ManageData = () => {
               id='search-input'
               value={searchValue}
               onChange={handleFilter}
-              placeholder='Tìm kiếm tên bộ dữ liệu'
-              style={{ marginRight: '10px', height: '36px' }}
             />
-             <Input type='select' value={statusValue} onChange={e => handleStatusValue(e.target.value)} className='dataTable-filter mb-50'>
-            <option value=''>Tất cả</option>
-            <option value='1'>Nhận diện khuôn mặt</option>
-            <option value='2'>Nhận dạng sự kiện bất thường</option>
-            <option value='3'>Phát hiện khuôn mặt</option>
-          </Input>
           </Col>
-          {/* <Col className='d-flex align-items-center justify-content-end mt-1' md='3' sm='12'> */}
-          {/* <Input className='w-auto ' type='select' value={statusValue} onChange={e => handleStatusValue(e.target.value)}>
-            <option value=''>Tất cả</option>
-            <option value='1'>Nhận diện khuôn mặt</option>
-            <option value='2'>Nhận dạng sự kiện bất thường</option>
-            <option value='3'>Phát hiện khuôn mặt</option>
-          </Input> */}
-          {/* </Col> */}
         </Row>
         <div className='react-dataTable react-dataTable-selectable-rows'>
           <DataTable
             noHeader
             pagination
+            // selectableRows
             columns={columns}
             paginationPerPage={10}
             className='react-dataTable'
@@ -481,15 +345,15 @@ const ManageData = () => {
             paginationComponent={CustomPagination}
             paginationDefaultPage={currentPage + 1}
             selectableRowsComponent={BootstrapCheckbox}
-            data={dataDataset.results}
+            data={patients.data}
           />
         </div>
       </Card>
-      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg' backdrop="static">
+      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg'>
         <ModalHeader className='bg-transparent' toggle={() => setShowEdit(!showEdit)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
-            <h1 className='mb-1'>Chi tiết bộ dữ liệu</h1>
+            <h1 className='mb-1'>Chỉnh sửa bộ dữ liệu</h1>
             <p>Cập nhật chi tiết thông tin</p>
           </div>
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
@@ -507,6 +371,7 @@ const ManageData = () => {
               </Label>
               <Input id='datasetsum' type='number' value={infoData.datasetsum} onChange={(e) => handleOnChange(e.target.value, "datasetsum")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.datasetsum}</p>
+
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='datasetsoftID'>
@@ -522,7 +387,7 @@ const ManageData = () => {
               <Label className='form-label' for='datasetdescription'>
                 Mô tả
               </Label>
-              <Input id='datasetdescription' type='text' value={infoData.datasetdescription} onChange={(e) => handleOnChange(e.target.value, "datasetdescription")} />
+              <Input id='datasetdescription' type='textarea' value={infoData.datasetdescription} onChange={(e) => handleOnChange(e.target.value, "datasetdescription")} />
 
             </Col>
             <Col md={12} xs={12}>
@@ -532,7 +397,7 @@ const ManageData = () => {
               <Input type='file' id='salary' onChange={(e) => setFile(e.target.files[0])} accept=".zip" />
             </Col>
             <Col md={12} xs={12}>
-              {roleId.roleid === 2 && (
+              {role === 'A' && (
                 <div className='demo-inline-spacing mb-1'>
                   <div className='form-check'>
                     <Input
@@ -572,8 +437,8 @@ const ManageData = () => {
           </Row>
         </ModalBody>
       </Modal>
-      <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)} className='modal-dialog-centered modal-lg' backdrop="static">
-        <ModalHeader className='bg-transparent' toggle={handleCancel}></ModalHeader>
+      <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)} className='modal-dialog-centered modal-lg'>
+        <ModalHeader className='bg-transparent' toggle={() => setShowAdd(!showAdd)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
             <h1 className='mb-1'>Thêm bộ dữ liệu</h1>
@@ -614,14 +479,7 @@ const ManageData = () => {
               <Label className='form-label' for='salary' >
                 Chọn file zip bộ dữ liệu <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input type='file' id='salary' onChange={handleFileChange} accept=".zip" />
-              {valErrors.salary &&  <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.salary}</p>}
-              {/* <Input
-                  type='file'
-                  id='salary'
-                  onChange={handleFileChange}
-                  accept=".zip"
-              /> */}
+              <Input type='file' id='salary' onChange={(e) => setFile(e.target.files[0])} accept=".zip" />
             </Col>
             <Col md={12} xs={12}>
               <div className='demo-inline-spacing mb-1'>
@@ -640,23 +498,22 @@ const ManageData = () => {
               </div>
             </Col>
             <Col xs={12} className='text-center mt-2 pt-50'>
-              {/* <Button type='submit' className='me-1' color='primary' onClick={handleAdd} disabled={isDisable()}> */}
-              <Button type='submit' className='me-1' color='primary' onClick={handleAdd}>
+              <Button type='submit' className='me-1' color='primary' onClick={handleAdd} disabled={isDisable()}>
                 Thêm mới
               </Button>
-              <Button type='reset' color='secondary' outline onClick={handleCancel}>
+              <Button type='reset' color='secondary' outline onClick={() => setShowAdd(false)}>
                 Hủy
               </Button>
             </Col>
           </Row>
         </ModalBody>
       </Modal>
-      <Modal isOpen={showDelete} toggle={() => setShowDelete(!showDelete)} className='modal-dialog-centered modal-lg' backdrop="static">
+      <Modal isOpen={showDelete} toggle={() => setShowDelete(!showDelete)} className='modal-dialog-centered modal-lg'>
         <ModalHeader className='bg-transparent' toggle={() => setShowDelete(!showDelete)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
             <h1 className='mb-1'>Xóa bộ dữ liệu</h1>
-            <p>Xóa bộ ảnh hưởng các mô hình đang dùng. Bạn có chắc muốn xóa không?</p>
+            <p>Bạn có muốn xóa thông tin ngay bây giờ không?</p>
           </div>
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
             <Col xs={12} className='text-center mt-2 pt-50'>

@@ -9,7 +9,7 @@ import { getListClass } from '@store/action/classes'
 
 // ** Reactstrap Imports
 import { Card, CardImg, Collapse, Navbar, Col, Label, Input, NavItem, NavLink, Button, ModalBody, ModalHeader, Modal, Row } from 'reactstrap'
-import { getListUser, updateUser, deleteUser, addUser, updatePass, getInfo } from '@store/action/profile'
+import { getListUser, updateUser, deleteUser, addUser, updatePass, getMe } from '@store/action/profile'
 import { useSelector, useDispatch } from 'react-redux'
 import { Controller, useForm } from 'react-hook-form'
 import Flatpickr from 'react-flatpickr'
@@ -66,7 +66,7 @@ const ProfileHeader = ({ data }) => {
   }, [dispatch])
   const userData = JSON.parse(localStorage.getItem('userData'))
   useEffect(() => {
-    dispatch(getInfo(userData.id))
+    dispatch(getMe())
   }, [])
   // ** vars
   const [showRequets, setShowRequest] = useState(dataUser.roleid !== 1 && dataUser.chose_class === false)

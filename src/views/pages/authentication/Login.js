@@ -76,9 +76,10 @@ const Login = () => {
 
   const onSubmit = data => {
     const url = process.env.REACT_APP_API_URL
+    console.log(data)
     if (data.loginEmail !== "" && data.password !== "") {
-      axios.post(`${url}/login/`, {
-        email: data.loginEmail,
+      axios.post(`${url}/login`, {
+        username: data.loginEmail,
         password: data.password
       }, {
         withCredentials: true
@@ -113,7 +114,7 @@ const Login = () => {
               subject: 'all'
             }
           ])
-          navigate(getHomeRouteForLoggedInUser('admin'))
+          navigate(getHomeRouteForLoggedInUser('A'))
         })
         .catch(err => {
           MySwal.fire({
@@ -186,7 +187,7 @@ const Login = () => {
               </g>
             </g>
           </svg>
-          <h2 className='brand-text text-primary ms-1'>EX-AI</h2>
+          <h2 className='brand-text text-primary ms-1'>DCB</h2>
         </Link>
         <Col className='d-none d-lg-flex align-items-center p-5' lg='8' sm='12'>
           <div className='w-100 d-lg-flex align-items-center justify-content-center px-5'>
@@ -196,7 +197,7 @@ const Login = () => {
         <Col className='d-flex align-items-center auth-bg px-2 p-lg-5' lg='4' sm='12'>
           <Col className='px-xl-2 mx-auto' sm='8' md='6' lg='12'>
             <CardTitle tag='h2' className='fw-bold mb-1'>
-              Chào mừng đến với EX-AI! 👋
+              Chào mừng đến với DCB! 👋
             </CardTitle>
             <CardText className='mb-2'>Vui lòng đăng nhập vào tài khoản của bạn</CardText>
             <Form className='auth-login-form mt-2' onSubmit={handleSubmit(onSubmit)}>

@@ -3,8 +3,8 @@
 //Template config options
 const themeConfig = {
   app: {
-    appName: 'EX-AI',
-    appLogoImage: require('@src/assets/images/logo/logo.png').default
+    appName:'DCB',
+    appLogoImage: require('@src/assets/images/logo/hvktqs.png').default
   },
   layout: {
     isRTL: false,

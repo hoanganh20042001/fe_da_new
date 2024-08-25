@@ -5,7 +5,7 @@ const initialState = {
 
 const dataUser = (state = initialState, action) => {
     switch (action.type) {
-        case 'GET_USER':
+        case 'GET_LIST_USER':
             return { ...state, dataUser: action.data }
         case 'GET_INFO':
             return { ...state, dataUser: action.data }

@@ -18,21 +18,21 @@ const VerticalLayout = props => {
   // useEffect(() => {
   //   axios.get(URL).then(response => setMenuData(response.data))
   // }, [])
-  const roleID = JSON.parse(localStorage.getItem('userData'))
-  // console.log(roleID.roleid)
-  if (roleID.roleid === 1) {
+  const role_id = localStorage.getItem('role_id')
+  console.log(role_id)
+  if (role_id === 'D') {
     return (
       <Layout menuData={navigation1} {...props}>
         <Outlet />
       </Layout>
     )
-  } else if (roleID.roleid === 2) {
+  } else if (role_id === 'A') {
     return (
       <Layout menuData={navigation2} {...props}>
         <Outlet />
       </Layout>
     )
-  } else if (roleID.roleid === 3) {
+  } else if (role_id === 'S') {
     return (
       <Layout menuData={navigation3} {...props}>
         <Outlet />

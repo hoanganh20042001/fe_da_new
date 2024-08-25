@@ -19,23 +19,24 @@ export const authSlice = createSlice({
   },
   reducers: {
     handleLogin: (state, action) => {
+      console.log(action)
       state.userData = action.payload
-      state[config.storageTokenKeyName] = action.payload[config.storageTokenKeyName]
-      state[config.storageRefreshTokenKeyName] = action.payload[config.storageRefreshTokenKeyName]
-      localStorage.setItem('userData', JSON.stringify(action.payload))
-      localStorage.setItem('email', action.payload.email)
-      localStorage.setItem('roleid', action.payload.roleid)
-      localStorage.setItem(config.storageTokenKeyName, action.payload.accessToken)
-      localStorage.setItem(config.storageRefreshTokenKeyName, JSON.stringify(action.payload.refreshToken))
+      // state[config.storageTokenKeyName] = action.payload[config.storageTokenKeyName]
+      // state[config.storageRefreshTokenKeyName] = action.payload[config.storageRefreshTokenKeyName]
+      // localStorage.setItem('userData', JSON.stringify(action.payload))
+      localStorage.setItem('full_name', action.payload.data.full_name)
+      localStorage.setItem('role_id', action.payload.data.role_id)
+      localStorage.setItem(config.storageTokenKeyName, action.payload.data.access_token)
+      console.log(action.payload.data.access_token)
     },
     handleLogout: state => {
       state.userData = {}
       state[config.storageTokenKeyName] = null
       state[config.storageRefreshTokenKeyName] = null
       // ** Remove user, accessToken & refreshToken from localStorage
-      localStorage.removeItem('userData')
-      localStorage.removeItem('email')
-      localStorage.removeItem('roleid')
+      // localStorage.removeItem('userData')
+      localStorage.removeItem('full_name')
+      localStorage.removeItem('role_id')
       localStorage.removeItem(config.storageTokenKeyName)
       localStorage.removeItem(config.storageRefreshTokenKeyName)
     }

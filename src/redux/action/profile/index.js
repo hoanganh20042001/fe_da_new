@@ -10,26 +10,27 @@ const getListUser = (data) => {
   const url = process.env.REACT_APP_API_URL
   return async dispatch => {
     if (data.search) {
-      await axios.get(`${url}/accounts/?pageSize=${data.pageSize}&page=${data.pageNumber}&search=${data.search}`, {
+      await axios.get(`${url}/users/?page_size=${data.pageSize}&page=${data.pageNumber}&search_text=${data.search}&sort_by=id&order=desc`, {
         headers: {
           'content-type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`
         }
       }).then(response => {
         dispatch({
-          type: 'GET_USER',
+          type: 'GET_LIST_USER',
           data: response.data
         })
       })
     } else {
-    await axios.get(`${url}/accounts/?pageSize=${data.pageSize}&page=${data.pageNumber}`, {
+    await axios.get(`${url}/users/?page_size=${data.pageSize}&page=${data.pageNumber}&sort_by=id&order=desc`, {
       headers: {
         'content-type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`
       }
     }).then(response => {
+      console.log(response)
       dispatch({
-        type: 'GET_USER',
+        type: 'GET_LIST_USER',
         data: response.data
       })
     })
@@ -37,6 +38,26 @@ const getListUser = (data) => {
     }
    
 }
+
+const getMe = () => {
+  const url = process.env.REACT_APP_API_URL
+  console.log(localStorage.getItem("accessToken"))
+  return async dispatch => {
+      await axios.get(`${url}/users/me`, {
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        }
+      }).then(response => {
+        dispatch({
+          type: 'GET_INFO',
+          data: response.data
+        })
+      })
+
+    }
+    }
+   
 const getListUserNoClass = (data) => {
   const url = process.env.REACT_APP_API_URL
   return async dispatch => {
@@ -69,17 +90,17 @@ const searchUser = (data) => {
     })
   }
 }
-const getInfo = (data) => {
-  const url = process.env.REACT_APP_API_URL
-  return async dispatch => {
-    await axios.get(`${url}/accounts/${data}/`, { withCredentials: true }).then(response => {
-      dispatch({
-        type: 'GET_INFO',
-        data: response.data
-      })
-    })
-  }
-}
+// const getInfo = (data) => {
+//   const url = process.env.REACT_APP_API_URL
+//   return async dispatch => {
+//     await axios.get(`${url}/accounts/${data}/`, { withCredentials: true }).then(response => {
+//       dispatch({
+//         type: 'GET_INFO',
+//         data: response.data
+//       })
+//     })
+//   }
+// }
 // update identification
 const updatePass = (data) => {
   const url = process.env.REACT_APP_API_URL
@@ -116,7 +137,9 @@ const updateUser = (data) => {
       }
 
     }).then(response => {
-      
+      dispatch(getInfo({
+        data: data.id
+      }))
       toast(
         <div className='d-flex'>
           <div className='me-1'>
@@ -225,8 +248,9 @@ export {
   updateUser,
   deleteUser,
   addUser,
-  getInfo,
+  // getInfo,
   updatePass,
   searchUser,
-  getListUserNoClass
+  getListUserNoClass,
+  getMe
 }

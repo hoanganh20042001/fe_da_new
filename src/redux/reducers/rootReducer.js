@@ -23,6 +23,10 @@ import classes from './classes'
 import libs from './libs'
 import request from './request'
 import face from './face'
+import patients from './patients'
+import diseases from './diseases'
+import units from './units'
+import checks from './checks'
 const rootReducer = {
   auth,
   todo,
@@ -47,7 +51,11 @@ const rootReducer = {
   calendar,
   ecommerce,
   dataTables,
-  permissions
+  permissions,
+  patients,
+  diseases,
+  units,
+  checks
 }
 
 export default rootReducer

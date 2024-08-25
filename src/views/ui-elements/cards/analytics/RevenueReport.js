@@ -22,75 +22,152 @@ const RevenueReport = props => {
   // ** State
   const [data, setData] = useState(null)
   const [revenueOptions, setOption] = useState({})
+  // useEffect(() => {
+  //   const url = process.env.REACT_APP_API_URL
+  //   axios.get(`${url}/experiment/draw-exp-chart/`).then(res => {
+  //     const list = []
+  //     const cate = []
+  //     const temp = res.data.data
+  //     temp.list_result.map(item => {
+  //       list.push(item.count_exp)
+  //       cate.push(item.time)
+  //     })
+  //     setData(list)
+  //     setOption({
+  //       chart: {
+  //         stacked: true,
+  //         type: 'bar',
+  //         toolbar: { show: false }
+  //       },
+  //       grid: {
+  //         padding: {
+  //           top: -20,
+  //           bottom: -10
+  //         },
+  //         yaxis: {
+  //           lines: { show: false }
+  //         }
+  //       },
+  //       xaxis: {
+  //         categories: cate,
+  //         labels: {
+  //           hideOverlappingLabels: true,
+  //           style: {
+  //             colors: '#b9b9c3',
+  //             fontSize: '0.86rem'
+  //           },
+
+  //         },
+  //         axisTicks: {
+  //           show: false
+  //         },
+  //         axisBorder: {
+  //           show: false
+  //         }
+  //       },
+  //       legend: {
+  //         show: false
+  //       },
+  //       dataLabels: {
+  //         enabled: false
+  //       },
+  //       colors: [props.primary, props.warning],
+  //       plotOptions: {
+  //         bar: {
+  //           columnWidth: '17%',
+  //           borderRadius: [5]
+  //         },
+  //         distributed: true
+  //       },
+  //       yaxis: {
+  //         labels: {
+  //           style: {
+  //             colors: '#b9b9c3',
+  //             fontSize: '0.86rem'
+  //           }
+  //         }
+  //       }
+  //     },)
+  //   })
+  // }, [])
+
   useEffect(() => {
-    const url = process.env.REACT_APP_API_URL
-    axios.get(`${url}/experiment/draw-exp-chart/`).then(res => {
-      const list = []
-      const cate = []
-      const temp = res.data.data
-      temp.list_result.map(item => {
-        list.push(item.count_exp)
-        cate.push(item.time)
-      })
-      setData(list)
-      setOption({
-        chart: {
-          stacked: true,
-          type: 'bar',
-          toolbar: { show: false }
-        },
-        grid: {
-          padding: {
-            top: -20,
-            bottom: -10
-          },
-          yaxis: {
-            lines: { show: false }
-          }
-        },
-        xaxis: {
-          categories: cate,
-          labels: {
-            hideOverlappingLabels: true,
-            style: {
-              colors: '#b9b9c3',
-              fontSize: '0.86rem'
-            },
-            
-          },
-          axisTicks: {
-            show: false
-          },
-          axisBorder: {
-            show: false
-          }
-        },
-        legend: {
-          show: false
-        },
-        dataLabels: {
-          enabled: false
-        },
-        colors: [props.primary, props.warning],
-        plotOptions: {
-          bar: {
-            columnWidth: '17%',
-            borderRadius: [5]
-          },
-          distributed: true
+    // Giả lập dữ liệu từ API
+    const fakeData = {
+      data: {
+        list_result: [
+          { count_exp: 30, time: 'Jan' },
+          { count_exp: 40, time: 'Feb' },
+          { count_exp: 35, time: 'Mar' },
+          { count_exp: 50, time: 'Apr' },
+          { count_exp: 45, time: 'May' }
+        ]
+      }
+    }
+
+    const list = []
+    const cate = []
+    const temp = fakeData.data
+    temp.list_result.map(item => {
+      list.push(item.count_exp)
+      cate.push(item.time)
+    })
+    setData(list)
+    setOption({
+      chart: {
+        stacked: true,
+        type: 'bar',
+        toolbar: { show: false }
+      },
+      grid: {
+        padding: {
+          top: -20,
+          bottom: -10
         },
         yaxis: {
-          labels: {
-            style: {
-              colors: '#b9b9c3',
-              fontSize: '0.86rem'
-            }
+          lines: { show: false }
+        }
+      },
+      xaxis: {
+        categories: cate,
+        labels: {
+          hideOverlappingLabels: true,
+          style: {
+            colors: '#b9b9c3',
+            fontSize: '0.86rem'
+          },
+        },
+        axisTicks: {
+          show: false
+        },
+        axisBorder: {
+          show: false
+        }
+      },
+      legend: {
+        show: false
+      },
+      dataLabels: {
+        enabled: false
+      },
+      colors: [props.primary, props.warning],
+      plotOptions: {
+        bar: {
+          columnWidth: '17%',
+          borderRadius: [5]
+        },
+        distributed: true
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: '#b9b9c3',
+            fontSize: '0.86rem'
           }
         }
-      },)
+      }
     })
-  }, [])
-
+  }, [props.primary, props.warning])
 
   return data !== null ? (
     <Card className='card-revenue-budget'>
@@ -100,14 +177,14 @@ const RevenueReport = props => {
             <CardTitle className='mb-50 mb-sm-0'>Thống kê số bài thí nghiệm</CardTitle>
           </div>
           {
-            data && <Chart id='revenue-report-chart' height='230' options={revenueOptions} series={[
+            data && <Chart id='revenue-report-chart' height='380' options={revenueOptions} series={[
               {
                 name: 'Earning',
                 data: data
               }
             ]} />
           }
-  
+
         </Col>
       </Row>
     </Card>

@@ -6,25 +6,23 @@ import Wizard from '@components/wizard'
 
 import StepConfig from './step/stepConfig'
 import StepEvent from './step/stepEvent'
-import { CardTitle, Col } from 'reactstrap'
+import { CardTitle, Col, CardHeader, Card } from 'reactstrap'
 const WizardHorizontal = () => {
 
   const ref = useRef(null)
   // ** State
-  const [infoDetect, setInfoDetect] = useState({
-    web_Url: '',
-    conf: 0.25,
-    iou: 0.7,
-    dtViolence: true,
-    dtWeapon: true,
-    dtAccident: true,
-  })
+  const [cccd, setCccd] = useState('')
   const [stepper, setStepper] = useState(null)
+  const [status, setStatus] = useState(false)
+
   const userData = JSON.parse(localStorage.getItem('userData'))
   const [dataImg, setDataImg] = useState()
-  const handleChangeInfo = (data, pop) => {
-    console.log(data, pop)
-    setInfoDetect({ ...infoDetect, [pop]: data })
+  const handleChangeInfo = (data) => {
+    // console.log(data, pop)
+    setCccd(data)
+  }
+  const handleChangeStatus = (data) => {
+    setStatus(data)
   }
   const handleChangeData = (data) => {
     // console.log(data, pop)
@@ -33,35 +31,39 @@ const WizardHorizontal = () => {
   const steps = [
     {
       id: 'step-config',
-      title: 'Chọn ngưỡng config',
-      subtitle: 'Chọn ngưỡng config',
-      content: <StepConfig stepper={stepper} infoDetect={infoDetect} data={dataImg} changeInfo={handleChangeInfo} changeData={handleChangeData} />
+      title: 'Thông tin quân nhân',
+      subtitle: 'Thông tin quân nhân',
+      content: <StepConfig stepper={stepper} cccd={cccd} data={dataImg} status={status} changeInfo={handleChangeInfo} changeData={handleChangeData} changeStatus={handleChangeStatus} />
     },
     {
       id: 'step-event',
-      title: 'Chọn sự kiện cần phát hiện',
-      subtitle: 'Chọn sự kiện cần phát hiện',
-      content: <StepEvent stepper={stepper} infoDetect={infoDetect} data={dataImg} changeInfo={handleChangeInfo} changeData={handleChangeData} />
+      title: 'Dự đoán bệnh',
+      subtitle: 'Dự đoán bệnh',
+      content: <StepEvent stepper={stepper} cccd={cccd} data={dataImg} status={status} changeInfo={handleChangeInfo} changeData={handleChangeData} changeStatus={handleChangeStatus}/>
     }
   ]
 
   return (
- <div className='vertical-wizard'>
-   <Col lg='3' className='d-flex align-items-center px-0 px-lg-1'>
-
-<CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>
-  SỰ KIỆN BẤT THƯỜNG
-</CardTitle>
-</Col>
+    <div className='vertical-wizard'>
+      <Card>
+      <CardHeader className='flex-md-row flex-column align-md-items-center align-items-start border-bottom'>
+          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>KHÁM BỆNH</CardTitle>
+          {/* <div className='d-flex mt-md-0 mt-1'>
+            {
+              <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}> <Plus size={15} /> <span className='align-middle ms-50'>Thêm bộ dữ liệu</span> </Button>
+            }
+          </div> */}
+        </CardHeader>
         <Wizard
-          type='vertical'
-          ref={ref}
-          steps={steps}
-          instance={el => {
-            setStepper(el)
-          }}
-        />
-      </div>
+        type='vertical'
+        ref={ref}
+        steps={steps}
+        instance={el => {
+          setStepper(el)
+        }}
+      />
+        </Card>
+    </div>
   )
 }
 
