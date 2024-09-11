@@ -96,11 +96,20 @@ const RevenueReport = props => {
     const fakeData = {
       data: {
         list_result: [
-          { count_exp: 30, time: 'Jan' },
-          { count_exp: 40, time: 'Feb' },
-          { count_exp: 35, time: 'Mar' },
-          { count_exp: 50, time: 'Apr' },
-          { count_exp: 45, time: 'May' }
+          { count_exp: 30, time: 'AE' },
+          { count_exp: 40, time: 'Atelectasis' },
+          { count_exp: 35, time: 'Calcification' },
+          { count_exp: 50, time: 'Cardiomegaly' },
+          { count_exp: 45, time: 'Consolidation' },
+          { count_exp: 30, time: 'ILD' },
+          { count_exp: 40, time: 'Infiltration' },
+          { count_exp: 35, time: 'LO' },
+          { count_exp: 50, time: 'Nodule/Mass' },
+          { count_exp: 45, time: 'OL' },
+          { count_exp: 30, time: 'PE' },
+          { count_exp: 40, time: 'PT' },
+          { count_exp: 35, time: 'Pneumothorax' },
+          { count_exp: 50, time: 'PF' },
         ]
       }
     }
@@ -153,7 +162,7 @@ const RevenueReport = props => {
       colors: [props.primary, props.warning],
       plotOptions: {
         bar: {
-          columnWidth: '17%',
+          columnWidth: '10%',
           borderRadius: [5]
         },
         distributed: true
@@ -162,7 +171,7 @@ const RevenueReport = props => {
         labels: {
           style: {
             colors: '#b9b9c3',
-            fontSize: '0.86rem'
+            fontSize: '0.5rem'
           }
         }
       }
@@ -174,7 +183,7 @@ const RevenueReport = props => {
       <Row className='mx-0'>
         <Col className='revenue-report-wrapper' md='12' xs='12'>
           <div className='d-sm-flex justify-content-between align-items-center mb-3'>
-            <CardTitle className='mb-50 mb-sm-0'>Thống kê số bài thí nghiệm</CardTitle>
+            <CardTitle className='mb-50 mb-sm-0'>Thống kê số bệnh hay gặp</CardTitle>
           </div>
           {
             data && <Chart id='revenue-report-chart' height='380' options={revenueOptions} series={[

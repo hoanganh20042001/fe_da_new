@@ -44,9 +44,9 @@ const Earnings = ({ success }) => {
       enabled: false
     },
     legend: { show: false },
-    labels: ['Nhận diện khuôn mặt', 'Nhận dạng sự kiện bất thường', 'Phát hiện khuôn mặt'],
+    labels: ['Quân nhân bị bệnh', 'Quân nhân chưa được khám', 'Quân nhân bình thường'],
     stroke: { width: 0 },
-    colors: ['#28c76f66', '#28c76f33', success],
+    colors: ['#DC3545', '#FFC107', success],
     grid: {
       padding: {
         right: -20,
@@ -114,7 +114,7 @@ const Earnings = ({ success }) => {
       <CardBody>
         <Row>
           <Col xs='12'>
-            <CardTitle className='mb-1'>Số bài thí nghiệm</CardTitle>
+            <CardTitle className='mb-1'>Số quân nhân khám bệnh</CardTitle>
             {/* <div className='font-small-2'>This Month</div> */}
             {/* <h5 className='mb-1'>$4055.56</h5> */}
             <CardText className='text-muted font-small-2'>

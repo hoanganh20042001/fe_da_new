@@ -62,11 +62,11 @@ const StepConfig = ({ stepper, cccd, status, data, changeInfo, changeData, chang
   // const [data, setData] = useState()
   const [object, setObject] = useState(true)
   const roleId = JSON.parse(localStorage.getItem('userData'))
-
+  const [searchResults, setSearchResults] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [patientss, setPatients] = useState({
     full_name: '',
-    indentification:'',
+    indentification: '',
     email: '',
     phone_number: '',
     date_birth: '',
@@ -85,6 +85,24 @@ const StepConfig = ({ stepper, cccd, status, data, changeInfo, changeData, chang
   const validateCccd = (value) => {
     const cccdRegex = /^[0-9]{12}$/ // Định dạng CCCD là 12 chữ số
     return cccdRegex.test(value)
+  }
+  const handleInputSearch = (term) => {
+    setSearchTerm(term)
+    const url = process.env.REACT_APP_API_URL
+    axios.get(`${url}/patients/search_text/${term}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        },
+
+      }).then(response => {
+        console.log(response.data.data)
+        setSearchResults(response.data.data)
+      })
+      .catch(err => {
+        setSearchResults([])
+      })
   }
   const patients = useSelector((state) => state.patients.patients)
   const handleSearch = () => {
@@ -113,6 +131,10 @@ const StepConfig = ({ stepper, cccd, status, data, changeInfo, changeData, chang
       setIsValid(false)
       setValidationMessage('Số CCCD phải là 12 chữ số.')
     }
+  }
+  const handleSelectResult = (result) => {
+    setSearchTerm(result)
+    setSearchResults([])
   }
   useEffect(() => {
     setPatients(patients.data)
@@ -192,14 +214,15 @@ const StepConfig = ({ stepper, cccd, status, data, changeInfo, changeData, chang
             </Label>
             {/* <Input id='web_Url' className=' mb-50' type='text' value={infoDetect.web_Url} onChange={(e) => handleOnChange(e.target.value, "web_Url")} /> */}
             <Form inline>
-              <FormGroup className="mb-2 me-sm-2 mb-sm-0">
+              <FormGroup className="mb-2 me-sm-2 mb-sm-0 position-relative">
                 <div className="d-flex align-items-center">
                   <Input
                     type="text"
                     placeholder="Nhập CCCD cần tìm kiếm..."
                     value={searchTerm}
                     invalid={!isValid}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => handleInputSearch(e.target.value)
+                    }
                   />
                   <Button color="primary" onClick={handleSearch} className="ms-2">
                     <Search size={14} />
@@ -208,6 +231,15 @@ const StepConfig = ({ stepper, cccd, status, data, changeInfo, changeData, chang
                 <FormFeedback className="d-block">
                   {validationMessage}
                 </FormFeedback>
+                {searchResults.length > 0 && (
+                  <ListGroup className="position-absolute w-100 mt-1" style={{ maxHeight: '150px', overflowY: 'auto', zIndex: 1000  }}>
+                    {searchResults.map((result, index) => (
+                      <ListGroupItem key={index} onClick={() => handleSelectResult(result)} action>
+                        {result}
+                      </ListGroupItem>
+                    ))}
+                  </ListGroup>
+                )}
               </FormGroup>
             </Form>
 
@@ -231,9 +263,9 @@ const StepConfig = ({ stepper, cccd, status, data, changeInfo, changeData, chang
 
                     <Card className="user-info-card shadow-sm">
                       <CardBody>
-                        <CardTitle tag="h5" className="text-primary">
+                        {/* <CardTitle tag="h5" className="text-primary">
                           <User size={20} /> {patientss.full_name }
-                        </CardTitle>
+                        </CardTitle> */}
                         <Row>
                           <Col md="6">
                             <CardText>

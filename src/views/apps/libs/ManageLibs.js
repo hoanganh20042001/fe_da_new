@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useState, forwardRef, useEffect } from 'react'
+import { Fragment, useState, forwardRef, useEffect, React } from 'react'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
@@ -10,7 +10,7 @@ import Avatar from '@components/avatar'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard } from 'react-feather'
+import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, Eye, Info } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
 import { get, update, dels, add } from '@store/action/diseases'
 import { toDateStringFormat1, toDateString } from '@utils'
@@ -33,7 +33,9 @@ import {
   Modal,
   ModalBody,
   ModalHeader, ModalFooter,
-  Badge
+  Badge,
+  CardBody,
+  CardText
 } from 'reactstrap'
 import { format } from 'prettier'
 import { getListUser } from '../../../redux/action/profile'
@@ -81,7 +83,7 @@ const ManageLibs = () => {
       pageNumber: currentPage + 1
     }))
   }, [dispatch, currentPage])
-console.log(diseases)
+  console.log(diseases)
   const {
     control,
     setError,
@@ -114,8 +116,8 @@ console.log(diseases)
     } else {
       let temp = valErrors
 
-      if (infoData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } } 
-      if (infoData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } } 
+      if (infoData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } }
+      if (infoData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } }
       setValErrors(temp)
 
     }
@@ -133,8 +135,8 @@ console.log(diseases)
       })
     } else {
       let temp = valErrors
-      if (infoaddData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } } 
-      if (infoaddData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } } 
+      if (infoaddData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } }
+      if (infoaddData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } }
       setValErrors(temp)
     }
 
@@ -163,10 +165,13 @@ console.log(diseases)
   const handleEdit = (data) => {
     setShowEdit(true)
     setInfo({
-      softwarelibid: data.softwarelibid,
-      softwarelibname: data.softwarelibname,
-      softwareliburl: data.softwareliburl,
-      softwarelibdescription: data.softwarelibdescription,
+      name: data.name,
+      name_E: data.name_E,
+      symbol: data.symbol,
+      description: data.description,
+      reason: data.reason,
+      expression: data.expression,
+      advice: data.advice
     })
   }
   const handleOnChange = (data, pop) => {
@@ -224,8 +229,8 @@ console.log(diseases)
 
             {
               role === 3 ? <></> : <>
-                <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
-                <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
+                <Eye size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
+                {/* <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} /> */}
               </>
 
             }
@@ -276,9 +281,9 @@ console.log(diseases)
 
   useEffect(() => {
     if (data.metadata) {
-    setTotalPages(data.metadata.total_pages)
-  }
-   
+      setTotalPages(data.metadata.total_pages)
+    }
+
     setCurrentPage(0)
   }, [diseases.count])
 
@@ -300,25 +305,25 @@ console.log(diseases)
   // ** Custom Pagination
   const CustomPagination = () => (
     <ReactPaginate
-    previousLabel=''
-    nextLabel=''
-    forcePage={currentPage}
-    onPageChange={handlePagination}
-    pageCount={diseases.metadata.total_pages}
-    breakLabel='...'
-    pageRangeDisplayed={1}
-    marginPagesDisplayed={1}
-    activeClassName='active'
-    pageClassName='page-item'
-    breakClassName='page-item'
-    nextLinkClassName={`page-link ${isLastPage ? 'disabled' : ''}`}
-    pageLinkClassName='page-link'
-    breakLinkClassName='page-link'
-    previousLinkClassName={`page-link ${isFirstPage ? 'disabled' : ''}`}
-    nextClassName='page-item next-item'
-    previousClassName='page-item prev-item'
-    containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
-  />
+      previousLabel=''
+      nextLabel=''
+      forcePage={currentPage}
+      onPageChange={handlePagination}
+      pageCount={diseases.metadata.total_pages}
+      breakLabel='...'
+      pageRangeDisplayed={1}
+      marginPagesDisplayed={1}
+      activeClassName='active'
+      pageClassName='page-item'
+      breakClassName='page-item'
+      nextLinkClassName={`page-link ${isLastPage ? 'disabled' : ''}`}
+      pageLinkClassName='page-link'
+      breakLinkClassName='page-link'
+      previousLinkClassName={`page-link ${isFirstPage ? 'disabled' : ''}`}
+      nextClassName='page-item next-item'
+      previousClassName='page-item prev-item'
+      containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
+    />
   )
 
   return (
@@ -363,58 +368,67 @@ console.log(diseases)
             paginationComponent={CustomPagination}
             paginationDefaultPage={currentPage + 1}
             selectableRowsComponent={BootstrapCheckbox}
-            data={diseases.data}
+            data={Array.isArray(diseases?.data) ? diseases.data : []}
           />
         </div>
       </Card>
-      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg'>
+      <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-xl'>
         <ModalHeader className='bg-transparent' toggle={() => setShowEdit(!showEdit)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
             <h1 className='mb-1'>Thông tin chi tiết</h1>
-            <p>Cập nhật chi tiết</p>
+            {/* <p>Cập nhật chi tiết</p> */}
           </div>
-          <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibname'>
 
-                Tên thư viện  <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwarelibname' type='text' value={infoData.softwarelibname} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwareliburl'>
-                Đường dẫn  <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwareliburl' type='text' value={infoData.softwareliburl} onChange={(e) => handleOnChange(e.target.value, "softwareliburl")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwareliburl}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibdescription'>
-                Mô tả
-              </Label>
-              <Input id='softwarelibdescription' type='text' value={infoData.softwarelibdescription} onChange={(e) => handleOnChange(e.target.value, "softwarelibdescription")} readOnly={edit} />
-            </Col>
-            <Col xs={12} className='text-center mt-2 pt-50'>
-              {
-                role === 'A' ? <></> : <Button type='submit' className='me-1' color='primary' onClick={e => setEdit(false)} style={{ display: edit === true ? 'inline-block' : 'none' }}>
-                  Chỉnh sửa
-                </Button>
-              }
+          <Card>
+            <CardBody>
+              <CardTitle tag="h3">
+                <Info size={20} /> {infoData.name} ({infoData.symbol})
+              </CardTitle>
+              <CardText><strong>Tên tiếng anh:</strong> {infoData.name_E}</CardText>
+              <CardText><strong>Mô tả:</strong> {infoData.description}</CardText>
+              <CardText><strong>Nguyên nhân:</strong>
+                {typeof infoData.reason === 'string' ? (
+                  infoData.reason.split('.').map((sentence, index) => (
+                    <Fragment key={index}>
+                            <br />
+                      {sentence.trim()}
+                
+                    </Fragment>
+                  ))
+                ) : (
+                  infoData.reason
+                )}
+              </CardText>
+              <CardText><strong>Biểu hiện:</strong>
+              {typeof infoData.expression === 'string' ? (
+                  infoData.expression.split('.').map((sentence, index) => (
+                    <Fragment key={index}>
+                  <br />
+                      {sentence.trim()}
+                     
+                    </Fragment>
+                  ))
+                ) : (
+                  infoData.expression
+                )}
+              </CardText>
+              <CardText><strong>Phương pháp điều trị:</strong> 
+              {typeof infoData.advice === 'string' ? (
+                  infoData.advice.split('.').map((sentence, index) => (
+                    <Fragment key={index}>
+                            <br />
+                      {sentence.trim()}
+                     
+                    </Fragment>
+                  ))
+                ) : (
+                  infoData.advice
+                )}
+              </CardText>
+            </CardBody>
+          </Card>
 
-              <Button type='submit' className='me-1' color='primary' onClick={handleUpdate} style={{ display: edit === true ? 'none' : 'inline-block' }}>
-                Cập nhật
-              </Button>
-              <Button type='reset' color='secondary' outline onClick={() => {
-                setEdit(true)
-                setShowEdit(false)
-              }
-              }>
-                Hủy
-              </Button>
-            </Col>
-          </Row>
         </ModalBody>
       </Modal>
       <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)} className='modal-dialog-centered modal-lg'>

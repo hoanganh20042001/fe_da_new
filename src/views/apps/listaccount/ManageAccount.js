@@ -10,7 +10,7 @@ import Avatar from '@components/avatar'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { ChevronDown, CheckCircle, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Slash, X } from 'react-feather'
+import { ChevronDown, CheckCircle, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Slash, X, Lock } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
 import { getListUser, updateUser, deleteUser, addUser } from '@store/action/profile'
 import { toDateStringFormat1, toDateString } from '@utils'
@@ -82,7 +82,7 @@ const ManageAccount = () => {
     usrdob: '',
     usrfaculty: ''
   })
-  
+
 
   const dataUser = useSelector((state) => {
     return state.profile.dataUser
@@ -117,6 +117,7 @@ const ManageAccount = () => {
       email: data.email,
       name: data.name,
       password: data.password,
+      phone_number: data.phone_number,
       roleid: data.roleid,
       usrfullname: data.usrfullname,
       usrdob: data.usrdob,
@@ -199,12 +200,15 @@ const ManageAccount = () => {
     setInfo({
       id: data.id,
       email: data.email,
-      name: data.name,
+      full_name: data.full_name,
       password: data.password,
-      roleid: data.roleid,
-      usrfullname: data.usrfullname,
-      usrdob: data.usrdob,
-      usrfaculty: data.usrfaculty,
+      phone_number:data.phone_number,
+      role_id: data.role_id,
+      sex: data.sex,
+      rank: data.rank,
+      position: data.position,
+      unit: data.unit,
+      date_birth:data.date_birth
     })
   }
   const handleAccept = (data) => {
@@ -243,7 +247,7 @@ const ManageAccount = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (data === null || data === undefined || data === "" || !emailRegex.test(data)) {
       setValErrors({ ...valErrors, [pop]: 'Email không hợp lệ' })
-  
+
     } else {
       setValErrors({ ...valErrors, [pop]: null })
     }
@@ -293,7 +297,7 @@ const ManageAccount = () => {
       minWidth: '150px',
       cell: (row) => {
         return (
-          row.role === 'admin' ? 'Admin' : row.role === 'doctor' ? 'Bác sĩ' : 'Nhân viên'
+          row.role_id === 'A' ? 'Admin' : row.role_id === 'D' ? 'Bác sĩ' : 'Nhân viên'
         )
       },
       // center: true,
@@ -305,17 +309,17 @@ const ManageAccount = () => {
       selector: row => toDateString(row.last_login),
       // center: true,
     },
-    
+
     {
       name: 'Tác vụ',
       allowOverflow: true,
       cell: (row) => {
         return (
           <div className='d-flex'>
-            <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
+            <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />        
             <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
             {
-              row.is_active === false ? <CheckCircle size={15} onClick={() => handleAccept(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} /> : <></>
+              row.is_active === false ? <CheckCircle size={15} onClick={() => handleAccept(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} /> : <Lock size={15} onClick={() => handleAccept(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
             }
           </div>
         )
@@ -364,7 +368,7 @@ const ManageAccount = () => {
       },
     },
   }
-  
+
   // ** Custom Pagination
   const CustomPagination = () => (
     <ReactPaginate
@@ -429,7 +433,7 @@ const ManageAccount = () => {
             paginationComponent={CustomPagination}
             paginationDefaultPage={currentPage + 1}
             selectableRowsComponent={BootstrapCheckbox}
-            data={users}
+            data={Array.isArray(users) ? users : []}
             customStyles={customStyles}
           />
         </div>
@@ -450,35 +454,44 @@ const ManageAccount = () => {
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.email}</p>
             </Col>
             <Col md={12} xs={12}>
-              <Label className='form-label' for='name'>
+              <Label className='form-label' for='full_name'>
                 Tên người dùng
               </Label>
-              <Input id='name' type='text' value={infoData.name} onChange={(e) => handleOnChange(e.target.value, "name")} readOnly={edit} />
+              <Input id='name' type='text' value={infoData.full_name} onChange={(e) => handleOnChange(e.target.value, "name")} readOnly={edit} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.name}</p>
             </Col>
-            <Col md={12} xs={12}>
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='phone_number'>
+                Số điện thoại
+              </Label>
+              <Input id='phone_number' type='text' value={infoData.phone_number} onChange={(e) => handleOnChange(e.target.value, "phone_number")} readOnly={edit} />
+              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.phone_number}</p>
+            </Col>
+            <Col md={6} xs={12}>
               <Label className='form-label' for='register-password'>
                 Loại tài khoản
               </Label>
-              <Input type='select' name='role' id='role' value={infoData.roleid} onChange={(e) => handleOnChange(e.target.value, "roleid")} readOnly={edit}>
-                <option value='3'>Học viên</option>
-                <option value='2'>Giáo viên</option>
-                <option value='1'>Admin</option>
+              <Input type='select' name='role_id' id='role_id' value={infoData.role_id} onChange={(e) => handleOnChange(e.target.value, "roleid")} readOnly={edit}>
+                <option value='A'>Admin</option>
+                <option value='D'>Bác sĩ</option>
+                <option value='N'>Nhân viên</option>
               </Input>
             </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='usrfullname'>
-                Tên đầy đủ
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='register-password'>
+                Giới tính
               </Label>
-              <Input id='usrfullname' type='text' value={infoData.usrfullname} onChange={(e) => handleOnChange(e.target.value, "usrfullname")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfullname}</p>
+              <Input type='select' name='sex' id='sex' value={infoData.sex} onChange={(e) => handleOnChange(e.target.value, "roleid")} readOnly={edit}>
+                <option value='1'>Nam</option>
+                <option value='0'>Nữ</option>
+              </Input>
             </Col>
-            <Col md={12} xs={12}>
+            <Col md={6} xs={12}>
               <Label className='form-label' for='usrdob' >
                 Ngày sinh
               </Label>
               <Flatpickr
-                value={infoData.usrdob}
+                value={infoData.date_birth}
                 id='date-time-picker'
                 className='form-control'
                 options={{
@@ -489,9 +502,35 @@ const ManageAccount = () => {
                 onChange={date => handleOnChange(toDateStringFormat1(date.toString()), "usrdob")}
               />
             </Col>
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='rank'>
+                Quân hàm
+              </Label>
+              <Input
+                id='rank'
+                type='text'
+                value={infoData.rank}
+                onChange={(e) => handleOnChange(e.target.value, 'rank')}
+                readOnly={edit}
+              />
+              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.rank}</p>
+            </Col>
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='position'>
+                Chức vụ
+              </Label>
+              <Input
+                id='position'
+                type='text'
+                value={infoData.position}
+                onChange={(e) => handleOnChange(e.target.value, 'position')}
+                readOnly={edit}
+              />
+              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.position}</p>
+            </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='usrfaculty'>
-                Khoa
+                Đơn vị
               </Label>
               <Input id='usrfaculty' type='text' value={infoData.usrfaculty} onChange={(e) => handleOnChange(e.target.value, "usrfaculty")} readOnly={edit} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfaculty}</p>
@@ -522,20 +561,22 @@ const ManageAccount = () => {
             <p>Thêm chi tiết thông tin</p>
           </div>
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
-            <Col md={12} xs={12}>
+          <Col md={12} xs={12}>
               <Label className='form-label' for='email'>
                 Email
               </Label>
               <Input id='email' type='text' autoComplete={false} value={infoaddData.email} onChange={(e) => handleOnChangeEmail(e.target.value, "email")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.email}</p>
             </Col>
-            <Col md={12} xs={12}>
+             <Col md={12} xs={12}>
               <Label className='form-label' for='nameUser'>
                 Tên người dùng
               </Label>
-              <Input id='nameUser' type='text' autoComplete={false} value={infoaddData.name} onChange={(e) => handleOnChangeAdd(e.target.value, "name")} />
+              <Input id='nameUser' type='text' value={infoaddData.name} onChange={(e) => handleOnChangeAdd(e.target.value, "name")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.name}</p>
             </Col>
+           
+           
             <Col md={12} xs={12}>
               <Label className='form-label' for='password'>
                 Mật khẩu
@@ -570,14 +611,14 @@ const ManageAccount = () => {
                 Loại tài khoản
               </Label>
               <Input type='select' name='role' id='role' value={infoaddData.roleid} onChange={(e) => handleOnChangeAdd(e.target.value, "roleid")} readOnly={edit}>
-                <option value='3'>Học viên</option>
-                <option value='2'>Giáo viên</option>
-                <option value='1'>Admin</option>
+                <option value='A'>Admin</option>
+                <option value='D'>Bác sĩ</option>
+                <option value='S'>Nhân viên</option>
               </Input>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='usrfaculty'>
-                Khoa
+                Đơn vị
               </Label>
               <Input id='usrfaculty' type='text' value={infoaddData.usrfaculty} onChange={(e) => handleOnChangeAdd(e.target.value, "usrfaculty")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfaculty}</p>

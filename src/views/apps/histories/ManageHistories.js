@@ -225,25 +225,25 @@ console.log(checks)
         minWidth: '200px',
         selector: row => row.user,
       },
-    {
-      name: 'Tác vụ',
-      allowOverflow: true,
-      cell: (row) => {
-        return (
-          <div className='d-flex'>
+    // {
+    //   name: 'Tác vụ',
+    //   allowOverflow: true,
+    //   cell: (row) => {
+    //     return (
+    //       <div className='d-flex'>
 
-            {
-              role === 3 ? <></> : <>
-                <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
-                <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
-              </>
+    //         {
+    //           role === 3 ? <></> : <>
+    //             <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
+    //             <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
+    //           </>
 
-            }
+    //         }
 
-          </div>
-        )
-      }
-    }
+    //       </div>
+    //     )
+    //   }
+    // }
   ]
 
   // ** Function to handle filter
@@ -285,12 +285,11 @@ console.log(checks)
   const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
-    if (checks.data.metadata) {
-    setTotalPages(checks.data.metadata.total_pages)
-  }
-   
+    if (checks && checks.data && checks.data.metadata) {
+      setTotalPages(checks.data.metadata.total_pages)
+    }
     setCurrentPage(0)
-  }, [checks.data.count])
+  }, [checks?.data?.data?.count])
 
   const isFirstPage = currentPage === 0
   const isLastPage = currentPage === totalPages - 1
@@ -335,7 +334,7 @@ console.log(checks)
     <Fragment>
       <Card>
         <CardHeader className='flex-md-row flex-column align-md-items-center align-items-start border-bottom'>
-          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH BỆNH</CardTitle>
+          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>LỊCH SỬ</CardTitle>
           <div className='d-flex mt-md-0 mt-1'>
             {/* {
               role === 'A' ? <></> : <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}>
@@ -373,7 +372,7 @@ console.log(checks)
             paginationComponent={CustomPagination}
             paginationDefaultPage={currentPage + 1}
             selectableRowsComponent={BootstrapCheckbox}
-            data={checks.data.data}
+            data={checks?.data?.data}
           />
         </div>
       </Card>
@@ -407,12 +406,7 @@ console.log(checks)
               <Input id='softwarelibdescription' type='text' value={infoData.softwarelibdescription} onChange={(e) => handleOnChange(e.target.value, "softwarelibdescription")} readOnly={edit} />
             </Col>
             <Col xs={12} className='text-center mt-2 pt-50'>
-              {
-                role === 'A' ? <></> : <Button type='submit' className='me-1' color='primary' onClick={e => setEdit(false)} style={{ display: edit === true ? 'inline-block' : 'none' }}>
-                  Chỉnh sửa
-                </Button>
-              }
-
+      
               <Button type='submit' className='me-1' color='primary' onClick={handleUpdate} style={{ display: edit === true ? 'none' : 'inline-block' }}>
                 Cập nhật
               </Button>

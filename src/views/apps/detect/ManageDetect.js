@@ -49,7 +49,7 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
   </div>
 ))
 
-const ManageDetect = () => {
+const ManageDetects = () => {
   // ** States
   // const [modal, setModal] = useState(false)
   const [displaySelect, setDisplay] = useState(false)
@@ -464,4 +464,4 @@ const ManageDetect = () => {
   )
 }
 
-export default ManageDetect
+export default ManageDetects

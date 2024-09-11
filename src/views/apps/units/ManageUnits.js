@@ -100,6 +100,7 @@ const ManageUnits = () => {
     })
   }
   const role = localStorage.getItem('role_id')
+  console.log(role)
   const handleUpdate = () => {
     if (infoData.softwarelibname.trim() !== '' && infoData.softwareliburl.trim() !== '') {
       dispatch(updateLibs(infoData))
@@ -162,10 +163,10 @@ const ManageUnits = () => {
   const handleEdit = (data) => {
     setShowEdit(true)
     setInfo({
-      softwarelibid: data.softwarelibid,
-      softwarelibname: data.softwarelibname,
-      softwareliburl: data.softwareliburl,
-      softwarelibdescription: data.softwarelibdescription,
+      name: data.name,
+      symbol: data.symbol,
+      description: data.description,
+      unit_father: data.unit_father,
     })
   }
   const handleOnChange = (data, pop) => {
@@ -209,32 +210,27 @@ const ManageUnits = () => {
       selector: row => row.symbol,
     },
     {
-        name: 'Quân số',
+        name: 'Đơn vị cấp trên',
         sortable: true,
         minWidth: '200px',
-        selector: row => row.symbol,
+        selector: row => row.unit_father,
       },
-    {
+      
+  ]
+  if (role === 'A') {
+    columns.push({
       name: 'Tác vụ',
       allowOverflow: true,
       cell: (row) => {
         return (
           <div className='d-flex'>
-
-            {
-              role === 3 ? <></> : <>
-                <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
-                <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
-              </>
-
-            }
-
+            <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
+            <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
           </div>
         )
       }
-    }
-  ]
-
+    })
+  }
   // ** Function to handle filter
   const handleFilter = e => {
     const value = e.target.value
@@ -270,12 +266,12 @@ const ManageUnits = () => {
     //   pageNumber: page.selected + 1
     // }))
   }
-
+  console.log(role)
   const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
-    if (units.metadata) {
-    setTotalPages(units.metadata.total_pages)
+    if (units?.data?.metadata) {
+    setTotalPages(units.data.metadata.total_pages)
   }
    
     setCurrentPage(0)
@@ -303,7 +299,7 @@ const ManageUnits = () => {
     nextLabel=''
     forcePage={currentPage}
     onPageChange={handlePagination}
-    pageCount={units.metadata.total_pages}
+    pageCount={units?.data?.metadata.total_pages}
     breakLabel='...'
     pageRangeDisplayed={1}
     marginPagesDisplayed={1}
@@ -324,14 +320,14 @@ const ManageUnits = () => {
     <Fragment>
       <Card>
         <CardHeader className='flex-md-row flex-column align-md-items-center align-items-start border-bottom'>
-          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH BỆNH</CardTitle>
+          <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH ĐƠN VỊ</CardTitle>
           <div className='d-flex mt-md-0 mt-1'>
-            {/* {
-              role === 'A' ? <></> : <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}>
+            {
+              role === 'A' ? <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}>
                 <Plus size={15} />
-                <span className='align-middle ms-50'>Thêm thư viện</span>
-              </Button>
-            } */}
+                <span className='align-middle ms-50'>Thêm đơn vị</span>
+              </Button> : <></>
+            }
 
           </div>
         </CardHeader>
@@ -362,7 +358,7 @@ const ManageUnits = () => {
             paginationComponent={CustomPagination}
             paginationDefaultPage={currentPage + 1}
             selectableRowsComponent={BootstrapCheckbox}
-            data={units.data}
+            data={Array.isArray(units?.data?.data) ? units.data.data : []}
           />
         </div>
       </Card>
@@ -377,23 +373,32 @@ const ManageUnits = () => {
             <Col md={12} xs={12}>
               <Label className='form-label' for='softwarelibname'>
 
-                Tên thư viện  <span style={{ color: 'red' }}>*</span>
+                Tên đơn vị  <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input id='softwarelibname' type='text' value={infoData.softwarelibname} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
+              <Input id='softwarelibname' type='text' value={infoData.name} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
             </Col>
             <Col md={12} xs={12}>
-              <Label className='form-label' for='softwareliburl'>
-                Đường dẫn  <span style={{ color: 'red' }}>*</span>
+              <Label className='form-label' for='symbol'>
+
+                Ký hiệu  <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input id='softwareliburl' type='text' value={infoData.softwareliburl} onChange={(e) => handleOnChange(e.target.value, "softwareliburl")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwareliburl}</p>
+              <Input id='sumbol' type='text' value={infoData.symbol} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
+              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
+            </Col>
+            <Col md={12} xs={12}>
+              <Label className='form-label' for='softwarelibname'>
+
+                Đơn vị cấp trên  <span style={{ color: 'red' }}>*</span>
+              </Label>
+              <Input id='softwarelibname' type='text' value={infoData.unit_father} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
+              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='softwarelibdescription'>
                 Mô tả
               </Label>
-              <Input id='softwarelibdescription' type='text' value={infoData.softwarelibdescription} onChange={(e) => handleOnChange(e.target.value, "softwarelibdescription")} readOnly={edit} />
+              <Input id='softwarelibdescription' type='text' value={infoData.description} onChange={(e) => handleOnChange(e.target.value, "softwarelibdescription")} readOnly={edit} />
             </Col>
             <Col xs={12} className='text-center mt-2 pt-50'>
               {
@@ -420,22 +425,30 @@ const ManageUnits = () => {
         <ModalHeader className='bg-transparent' toggle={() => setShowAdd(!showAdd)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
-            <h1 className='mb-1'>Thêm thư viện</h1>
+            <h1 className='mb-1'>Thêm đơn vị</h1>
           </div>
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
             <Col md={12} xs={12}>
               <Label className='form-label' for='softwarelibname'>
-                Tên thư viện <span style={{ color: 'red' }}>*</span>
+                Tên đơn vị <span style={{ color: 'red' }}>*</span>
               </Label>
               <Input id='softwarelibname' type='text' value={infoaddData.softwarelibname} onChange={(e) => handleOnChangeAdd(e.target.value, "softwarelibname")} />
               <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
             </Col>
             <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibdescription'>
-                Đường dẫn <span style={{ color: 'red' }}>*</span>
+              <Label className='form-label' for='symbol'>
+                Ký hiệu <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input id='softwareliburl' type='text' value={infoaddData.softwareliburl} onChange={(e) => handleOnChangeAdd(e.target.value, "softwareliburl")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwareliburl}</p>
+              <Input id='symbol' type='text' value={infoaddData.softwarelibname} onChange={(e) => handleOnChangeAdd(e.target.value, "softwarelibname")} />
+              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
+            </Col>
+            <Col md={12} xs={12}>
+              <Label className='form-label' for='softwarelibname'>
+
+                Đơn vị cấp trên  <span style={{ color: 'red' }}>*</span>
+              </Label>
+              <Input id='softwarelibname' type='text' value={infoData.softwarelibname} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
+              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='softwarelibdescription'>
@@ -458,7 +471,7 @@ const ManageUnits = () => {
         <ModalHeader className='bg-transparent' toggle={() => setShowDelete(!showDelete)}></ModalHeader>
         <ModalBody className='px-sm-5 mx-50 pb-5'>
           <div className='text-center mb-2'>
-            <h1 className='mb-1'>Xóa thư viện</h1>
+            <h1 className='mb-1'>Xóa đơn vị</h1>
             <p>Bạn có muốn xóa thông tin ngay bây giờ không?</p>
           </div>
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>

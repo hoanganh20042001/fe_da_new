@@ -2,7 +2,7 @@
 import { lazy } from 'react'
 import { Navigate } from 'react-router-dom'
 import Detect from '../../views/apps/detect'
-
+import Detects from '../../views/apps/detects'
 const Chat = lazy(() => import('../../views/apps/chat'))
 const Todo = lazy(() => import('../../views/apps/todo'))
 const Email = lazy(() => import('../../views/apps/email'))
@@ -191,6 +191,10 @@ const AppRoutes = [
    {
     element: <Detect />,
     path: '/apps/detect'
+  },
+  {
+    element: <Detects />,
+    path: '/apps/detects'
   },
   {
     element: <EcommerceShop />,

@@ -47,12 +47,6 @@ export default [
     navLink: '/apps/units'
   },
   {
-    id: 'dataAcount',
-    title: 'Người dùng',
-    icon: <Users size={20} />,
-    navLink: '/apps/account'
-  },
-  {
     id: 'dataLibs',
     title: 'Bệnh lý',
     icon: <Activity size={20} />,
@@ -73,19 +67,25 @@ export default [
   // },
   {
     id: 'adminurrl',
-    title: 'Khám bệnh',
+    title: 'Chẩn đoán',
     icon: <Heart size={20} />,
     // navLink: '/apps/detect',
     children: [
         {
           id: 'invoiceList',
-          title: 'Khám bệnh',
+          title: 'Chẩn đoán',
           icon: <Circle size={12} />,
           navLink: '/apps/detect'
         },
         {
+          id: 'invoiceLists',
+          title: 'Chẩn đoán',
+          icon: <Circle size={12} />,
+          navLink: '/apps/detects'
+        },
+        {
           id: 'invoiceEdit',
-          title: 'Lịch sử khám bệnh',
+          title: 'Lịch sử ',
           icon: <Clock size={12} />,
           navLink: '/apps/histories'
         },
