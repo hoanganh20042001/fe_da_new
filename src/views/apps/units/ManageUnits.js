@@ -77,10 +77,11 @@ const ManageUnits = () => {
   useEffect(() => {
     dispatch(get({
       pageSize: 9,
-      pageNumber: currentPage + 1
+      pageNumber: currentPage + 1,
+      search_text: searchValue
     }))
-  }, [dispatch, currentPage])
-// console.log(diseases)
+  }, [dispatch, currentPage, searchValue])
+  // console.log(diseases)
   const {
     control,
     setError,
@@ -114,8 +115,8 @@ const ManageUnits = () => {
     } else {
       let temp = valErrors
 
-      if (infoData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } } 
-      if (infoData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } } 
+      if (infoData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } }
+      if (infoData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } }
       setValErrors(temp)
 
     }
@@ -133,8 +134,8 @@ const ManageUnits = () => {
       })
     } else {
       let temp = valErrors
-      if (infoaddData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } } 
-      if (infoaddData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } } 
+      if (infoaddData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } }
+      if (infoaddData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } }
       setValErrors(temp)
     }
 
@@ -210,12 +211,12 @@ const ManageUnits = () => {
       selector: row => row.symbol,
     },
     {
-        name: 'Đơn vị cấp trên',
-        sortable: true,
-        minWidth: '200px',
-        selector: row => row.unit_father,
-      },
-      
+      name: 'Đơn vị cấp trên',
+      sortable: true,
+      minWidth: '200px',
+      selector: row => row.unit_father,
+    },
+
   ]
   if (role === 'A') {
     columns.push({
@@ -236,26 +237,6 @@ const ManageUnits = () => {
     const value = e.target.value
     // console.log(typeof (value))
     setSearchValue(value)
-
-    const status = {
-      1: { title: 'Current', color: 'light-primary' },
-      2: { title: 'Professional', color: 'light-success' },
-      3: { title: 'Rejected', color: 'light-danger' },
-      4: { title: 'Resigned', color: 'light-warning' },
-      5: { title: 'Applied', color: 'light-info' }
-    }
-
-    if (value.length) {
-      dispatch(getListLibs({
-        pageNumber: currentPage + 1,
-        search: value.trim()
-      }))
-      setSearchValue(value)
-    } else {
-      dispatch(getListLibs({
-        pageNumber: 1
-      }))
-    }
   }
 
   // ** Function to handle Pagination
@@ -271,9 +252,9 @@ const ManageUnits = () => {
 
   useEffect(() => {
     if (units?.data?.metadata) {
-    setTotalPages(units.data.metadata.total_pages)
-  }
-   
+      setTotalPages(units.data.metadata.total_pages)
+    }
+
     setCurrentPage(0)
   }, [units.count])
 
@@ -295,25 +276,25 @@ const ManageUnits = () => {
   // ** Custom Pagination
   const CustomPagination = () => (
     <ReactPaginate
-    previousLabel=''
-    nextLabel=''
-    forcePage={currentPage}
-    onPageChange={handlePagination}
-    pageCount={units?.data?.metadata.total_pages}
-    breakLabel='...'
-    pageRangeDisplayed={1}
-    marginPagesDisplayed={1}
-    activeClassName='active'
-    pageClassName='page-item'
-    breakClassName='page-item'
-    nextLinkClassName={`page-link ${isLastPage ? 'disabled' : ''}`}
-    pageLinkClassName='page-link'
-    breakLinkClassName='page-link'
-    previousLinkClassName={`page-link ${isFirstPage ? 'disabled' : ''}`}
-    nextClassName='page-item next-item'
-    previousClassName='page-item prev-item'
-    containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
-  />
+      previousLabel=''
+      nextLabel=''
+      forcePage={currentPage}
+      onPageChange={handlePagination}
+      pageCount={units?.data?.metadata.total_pages}
+      breakLabel='...'
+      pageRangeDisplayed={1}
+      marginPagesDisplayed={1}
+      activeClassName='active'
+      pageClassName='page-item'
+      breakClassName='page-item'
+      nextLinkClassName={`page-link ${isLastPage ? 'disabled' : ''}`}
+      pageLinkClassName='page-link'
+      breakLinkClassName='page-link'
+      previousLinkClassName={`page-link ${isFirstPage ? 'disabled' : ''}`}
+      nextClassName='page-item next-item'
+      previousClassName='page-item prev-item'
+      containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
+    />
   )
 
   return (
@@ -342,6 +323,7 @@ const ManageUnits = () => {
               bsSize='sm'
               id='search-input'
               value={searchValue}
+              placeholder='Tìm kiếm tên đơn vị'
               onChange={handleFilter}
             />
           </Col>

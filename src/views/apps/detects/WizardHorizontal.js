@@ -14,7 +14,10 @@ const WizardHorizontal = () => {
   const [info, setInfo] = useState('')
   const [stepper, setStepper] = useState(null)
   const [status, setStatus] = useState(false)
-  const [dataImg, setDataImg] = useState()
+  const [dataImg1, setDataImg1] = useState()
+  const [dataImg2, setDataImg2] = useState()
+  const [name, setName] = useState()
+
   const handleChangeInfo = (data) => {
     // console.log(data, pop)
     setInfo(data)
@@ -22,22 +25,30 @@ const WizardHorizontal = () => {
   const handleChangeStatus = (data) => {
     setStatus(data)
   }
-  const handleChangeData = (data) => {
+  const handleChangeData1 = (data) => {
     // console.log(data, pop)
-    setDataImg(data)
+    setDataImg1(data)
+  }
+  const handleChangeData2 = (data) => {
+    // console.log(data, pop)
+    setDataImg2(data)
+  }
+  const handleChangeName = (data) => {
+    // console.log(data, pop)
+    setName(data)
   }
   const steps = [
     {
       id: 'step-config',
       title: 'Danh sách quân nhân',
       subtitle: 'Danh sách quân nhân',
-      content: <StepConfig stepper={stepper} info={info} data={dataImg} status={status} changeInfo={handleChangeInfo} changeData={handleChangeData} changeStatus={handleChangeStatus} />
+      content: <StepConfig stepper={stepper} status={status} changeInfo={handleChangeInfo} changeData1={handleChangeData1} changeData2={handleChangeData2} changeStatus={handleChangeStatus} changeName={handleChangeName}/>
     },
     {
       id: 'step-event',
-      title: 'Dự đoán bệnh',
-      subtitle: 'Dự đoán bệnh',
-      content: <StepEvent stepper={stepper} info={info} data={dataImg} status={status} changeInfo={handleChangeInfo} changeData={handleChangeData} changeStatus={handleChangeStatus}/>
+      title: 'Kết luận',
+      subtitle: 'Kết luận',
+      content: <StepEvent stepper={stepper} info={info} data1={dataImg1} data2={dataImg2} status={status} name={name}changeInfo={handleChangeInfo} changeStatus={handleChangeStatus}/>
     }
   ]
 

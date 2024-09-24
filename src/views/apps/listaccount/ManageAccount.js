@@ -90,9 +90,10 @@ const ManageAccount = () => {
   useEffect(() => {
     dispatch(getListUser({
       pageSize: 10,
-      pageNumber: currentPage + 1
+      pageNumber: currentPage + 1,
+      search:searchValue
     }))
-  }, [dispatch, currentPage])
+  }, [dispatch, currentPage, searchValue])
   useEffect(() => {
     if (Array.isArray(dataUser.data)) {
       setUsers(dataUser.data)
@@ -333,23 +334,23 @@ const ManageAccount = () => {
     const value = e.target.value
     setSearchValue(value)
 
-    const status = {
-      1: { title: 'Admin', color: 'light-primary' },
-      2: { title: 'Bác sĩ', color: 'light-success' },
-      3: { title: 'Nhân viên', color: 'light-danger' },
-    }
-    const role = {
-      0: { title: 'Professional', color: 'light-success' },
-      1: { title: 'Rejected', color: 'light-danger' },
-    }
-    if (value.length) {
-      dispatch(getListUser({
-        pageSize: 10,
-        pageNumber: currentPage + 1,
-        search: value.trim()
-      }))
-      setSearchValue(value)
-    }
+    // const status = {
+    //   1: { title: 'Admin', color: 'light-primary' },
+    //   2: { title: 'Bác sĩ', color: 'light-success' },
+    //   3: { title: 'Nhân viên', color: 'light-danger' },
+    // }
+    // const role = {
+    //   0: { title: 'Professional', color: 'light-success' },
+    //   1: { title: 'Rejected', color: 'light-danger' },
+    // }
+    // if (value.length) {
+    //   dispatch(getListUser({
+    //     pageSize: 10,
+    //     pageNumber: currentPage + 1,
+    //     search: value.trim()
+    //   }))
+    //   setSearchValue(value)
+    // }
   }
 
   // ** Function to handle Pagination
@@ -415,6 +416,7 @@ const ManageAccount = () => {
               type='text'
               bsSize='sm'
               id='search-input'
+              placeholder='Tìm kiếm tên người dùng'
               value={searchValue}
               onChange={handleFilter}
             />

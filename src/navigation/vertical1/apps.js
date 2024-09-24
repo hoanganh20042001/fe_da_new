@@ -79,7 +79,7 @@ export default [
         },
         {
           id: 'invoiceLists',
-          title: 'Chẩn đoán',
+          title: 'Kết luận',
           icon: <Circle size={12} />,
           navLink: '/apps/detects'
         },

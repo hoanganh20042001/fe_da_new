@@ -51,7 +51,7 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
     </div>
 ))
 
-const StepConfig = ({ stepper, info, status, data, changeInfo, changeData, changeStatus }) => {
+const StepConfig = ({ stepper, info, status, changeInfo, changeData1, changeData2, changeStatus, changeName }) => {
     // ** States
     // const [modal, setModal] = useState(false)
     const [displaySelect, setDisplay] = useState(false)
@@ -62,7 +62,8 @@ const StepConfig = ({ stepper, info, status, data, changeInfo, changeData, chang
     const [object, setObject] = useState(true)
     const roleId = JSON.parse(localStorage.getItem('userData'))
     const [searchResults, setSearchResults] = useState([])
-    const [searchTerm, setSearchTerm] = useState('')
+    const [KL, setIsKL] = useState(false)
+    const [searchText, setSearchText] = useState('')
     const [patientss, setPatients] = useState({
         full_name: '',
         indentification: '',
@@ -79,65 +80,19 @@ const StepConfig = ({ stepper, info, status, data, changeInfo, changeData, chang
         rank: '',
         enlistment_date: ''
     })
+    const [selectedOption, setSelectedOption] = useState('0')
     const [validationMessage, setValidationMessage] = useState('')
     const [showFullInfo, setShowFullInfo] = useState(false)
     const validateCccd = (value) => {
         const cccdRegex = /^[0-9]{12}$/ // Định dạng CCCD là 12 chữ số
         return cccdRegex.test(value)
     }
-    const handleInputSearch = (term) => {
-        setSearchTerm(term)
-        const url = process.env.REACT_APP_API_URL
-        axios.get(`${url}/patients/search_text/${term}`,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-                },
 
-            }).then(response => {
-                console.log(response.data.data)
-                setSearchResults(response.data.data)
-            })
-            .catch(err => {
-                setSearchResults([])
-            })
-    }
     const patients = useSelector((state) => state.patients.patients)
-    const handleSearch = () => {
-        if (validateCccd(searchTerm)) {
-            setIsValid(true)
-            // setValidationMessage('Số CCCD hợp lệ.')
 
-            dispatch(getByCccd(searchTerm)) // Correctly dispatching the action
-                .then(() => {
-                    setValidationMessage('')
-                    changeInfo(searchTerm)
-                    // setPatients(patients.data)
-                    // console.log(patients.data)
-                    setShowFullInfo(true)
-                    // setPatients(patients)
-                    // console.log(patients.data.data)
-                    // setPatients(patients.data)
-                    changeStatus(true)
-
-                })
-                .catch((error) => {
-                    console.error('Error fetching data:', error)
-                    setValidationMessage('Đã xảy ra lỗi khi lấy dữ liệu.')
-                })
-        } else {
-            setIsValid(false)
-            setValidationMessage('Số CCCD phải là 12 chữ số.')
-        }
-    }
-    const handleSelectResult = (result) => {
-        setSearchTerm(result)
-        setSearchResults([])
-    }
-    useEffect(() => {
-        setPatients(patients.data)
-    }, [patients])
+    // useEffect(() => {
+    //     setPatients(patients.data)
+    // }, [patients])
     const [valErrors, setValErrors] = useState({
         web_Url: '',
         conf: '',
@@ -146,19 +101,6 @@ const StepConfig = ({ stepper, info, status, data, changeInfo, changeData, chang
     // const patientss = patients.data ? patients.data : {}
     const navigate = useNavigate()
 
-    const onSubmit = data => {
-        if (Object.values(data)) {
-            return null
-        } else {
-            for (const key in data) {
-                if (data[key].length === 0) {
-                    setError(key, {
-                        type: 'manual'
-                    })
-                }
-            }
-        }
-    }
 
     const handleOnChange = (value, pop) => {
         if (value === null || value === undefined || value === "") {
@@ -186,18 +128,34 @@ const StepConfig = ({ stepper, info, status, data, changeInfo, changeData, chang
     const handleClick = () => {
         setIsTextVisible(!isTextVisible)
     }
-    useEffect(() => {
-        dispatch(get({
-            pageSize: 7,
-            page: currentPage + 1
-        }))
-    }, [dispatch, currentPage])
-    const handleNext = (data) => {
-        console.log(data)
-        changeInfo(data.id)
-        stepper.next()
+    const handleSelectChange = (event) => {
+        const value = event.target.value
+        console.log(value)
+        setSelectedOption(value)
 
     }
+    const handleNext = (data) => {
+        console.log(data.image_1)
+        changeInfo(data.check_id)
+        changeData1(data.image_1)
+        changeData2(data.image_2)
+        changeName(data.full_name)
+        stepper.next()
+        setIsKL(true)
+
+    }
+    useEffect(() => {
+        dispatch(get({
+            pageSize: 9,
+            page: currentPage + 1,
+            search_text: searchText,
+            status: selectedOption,
+        }))
+        if (KL) {
+            setIsKL(false)
+          }
+    }, [dispatch, currentPage, searchText, status, selectedOption, KL])
+   
     const columns = [
         {
             name: 'STT',
@@ -247,37 +205,30 @@ const StepConfig = ({ stepper, info, status, data, changeInfo, changeData, chang
             cell: (row) => {
                 return (
                     <div className='d-flex'>
-                    <Button
-                      color="primary"
-                      size="sm"
-                      onClick={() => handleNext(row)}
-                      style={{ cursor: 'pointer', marginLeft: '6px', padding: '4px 8px' }} // Điều chỉnh padding cho nút nhỏ hơn
-                    >
-                      <span className='align-middle ms-50'>Kết luận</span>
-                      <ArrowRight size={14} className='align-middle ms-sm-25 ms-0' />
-                    </Button>
-                  </div>
+                        {row.status === null && (
+                            <span style={{ color: 'red' }}>Chưa có ảnh</span>
+                        )}
+                        {row.status === true && (
+                            <span style={{ color: 'green' }}>Đã kết luận</span>
+                        )}
+                        {row.status === false && (
+                            <Button
+                                color="primary"
+                                size="sm"
+                                onClick={() => handleNext(row)}
+                                style={{ cursor: 'pointer', marginLeft: '6px', padding: '4px 8px' }}
+                            >
+                                <span className='align-middle ms-50'>Kết luận</span>
+                                <ArrowRight size={14} className='align-middle ms-sm-25 ms-0' />
+                            </Button>
+                        )}
+                    </div>
                 )
             }
         }
     ]
     const handleFilter = e => {
-        const value = e.target.value
-        setSearchValue(value)
-
-        if (value.length) {
-            dispatch(getListData({
-                pageSize: 10,
-                page: currentPage + 1,
-                datasetName: value.trim()
-            }))
-            setSearchValue(value)
-        } else {
-            dispatch(getListData({
-                pageSize: 10,
-                page: 1
-            }))
-        }
+        setSearchText(e)
     }
 
     // ** Function to handle Pagination
@@ -331,12 +282,12 @@ const StepConfig = ({ stepper, info, status, data, changeInfo, changeData, chang
                                 placeholder='Tìm kiếm tên quân nhân'
                             />
                         </div>
-                        <Input className='w-auto ' type='select' >
+                        <Input className='w-auto ' type='select' value={selectedOption} onChange={handleSelectChange}>
                             <option value='0'>Tất cả</option>
                             <option value='1'>Quân nhân đã chẩn đoán</option>
                             <option value='2'>Quân nhân chưa chẩn đoán</option>
                             <option value='3'>Quân nhân bị bệnh</option>
-                            <option value='3'>Quân nhân bình thường</option>
+                            <option value='4'>Quân nhân bình thường</option>
                         </Input>
                     </Col>
                 </Row>

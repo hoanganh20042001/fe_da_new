@@ -245,11 +245,11 @@ const Login = () => {
                 Đăng nhập
               </Button>
             </Form>
-            <p className='text-center mt-2'>
+            {/* <p className='text-center mt-2'>
               <Link to='/register'>
                 <span>Đăng kí</span>
               </Link>
-            </p>
+            </p> */}
           </Col>
         </Col>
       </Row>

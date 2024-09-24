@@ -80,9 +80,11 @@ const ManageLibs = () => {
   useEffect(() => {
     dispatch(get({
       pageSize: 9,
-      pageNumber: currentPage + 1
+      pageNumber: currentPage + 1,
+      search_text: searchValue
+
     }))
-  }, [dispatch, currentPage])
+  }, [dispatch, currentPage, searchValue])
   console.log(diseases)
   const {
     control,
@@ -244,28 +246,8 @@ const ManageLibs = () => {
   // ** Function to handle filter
   const handleFilter = e => {
     const value = e.target.value
-    // console.log(typeof (value))
+    console.log(value)
     setSearchValue(value)
-
-    const status = {
-      1: { title: 'Current', color: 'light-primary' },
-      2: { title: 'Professional', color: 'light-success' },
-      3: { title: 'Rejected', color: 'light-danger' },
-      4: { title: 'Resigned', color: 'light-warning' },
-      5: { title: 'Applied', color: 'light-info' }
-    }
-
-    if (value.length) {
-      dispatch(getListLibs({
-        pageNumber: currentPage + 1,
-        search: value.trim()
-      }))
-      setSearchValue(value)
-    } else {
-      dispatch(getListLibs({
-        pageNumber: 1
-      }))
-    }
   }
 
   // ** Function to handle Pagination
@@ -351,6 +333,7 @@ const ManageLibs = () => {
               type='text'
               bsSize='sm'
               id='search-input'
+              placeholder='Tìm kiếm tên bệnh'
               value={searchValue}
               onChange={handleFilter}
             />
@@ -391,9 +374,9 @@ const ManageLibs = () => {
                 {typeof infoData.reason === 'string' ? (
                   infoData.reason.split('.').map((sentence, index) => (
                     <Fragment key={index}>
-                            <br />
+                      <br />
                       {sentence.trim()}
-                
+
                     </Fragment>
                   ))
                 ) : (
@@ -401,25 +384,25 @@ const ManageLibs = () => {
                 )}
               </CardText>
               <CardText><strong>Biểu hiện:</strong>
-              {typeof infoData.expression === 'string' ? (
+                {typeof infoData.expression === 'string' ? (
                   infoData.expression.split('.').map((sentence, index) => (
                     <Fragment key={index}>
-                  <br />
+                      <br />
                       {sentence.trim()}
-                     
+
                     </Fragment>
                   ))
                 ) : (
                   infoData.expression
                 )}
               </CardText>
-              <CardText><strong>Phương pháp điều trị:</strong> 
-              {typeof infoData.advice === 'string' ? (
+              <CardText><strong>Phương pháp điều trị:</strong>
+                {typeof infoData.advice === 'string' ? (
                   infoData.advice.split('.').map((sentence, index) => (
                     <Fragment key={index}>
-                            <br />
+                      <br />
                       {sentence.trim()}
-                     
+
                     </Fragment>
                   ))
                 ) : (

@@ -1,18 +1,42 @@
 // ** React Imports
-import { Fragment } from 'react'
-
+import { Fragment, useState, forwardRef, useEffect } from 'react'
 // ** Custom Components
 import Avatar from '@components/avatar'
-
+import { io } from 'socket.io-client'
 // ** Third Party Components
 import classnames from 'classnames'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { Bell, X, Check, AlertTriangle } from 'react-feather'
-
+const socket = io('http://127.0.0.1:8000/sockets')
 // ** Reactstrap Imports
 import { Button, Badge, Input, DropdownMenu, DropdownItem, DropdownToggle, UncontrolledDropdown } from 'reactstrap'
 
 const NotificationDropdown = () => {
+  const [messages, setMessages] = useState([])
+
+  useEffect(() => {
+    // Kết nối đến server
+    socket.on('connect', () => {
+      console.log('Connected to server')
+    })
+
+    // Lắng nghe sự kiện 'chat'
+    socket.on('chat', (data) => {
+      console.log('Received message:', data)
+    })
+
+    // Xử lý ngắt kết nối
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server')
+    })
+
+    // Dọn dẹp khi component bị unmount
+    return () => {
+      socket.off('connect')
+      socket.off('chat')
+      socket.off('disconnect')
+    }
+  }, [])
   // ** Notification Array
   const notificationsArray = [
     {
@@ -41,14 +65,6 @@ const NotificationDropdown = () => {
         <p className='media-heading'>
           <span className='fw-bolder'>Revised Order 👋</span>&nbsp;checkout
         </p>
-      )
-    },
-    {
-      title: <h6 className='fw-bolder me-auto mb-0'>System Notifications</h6>,
-      switch: (
-        <div className='form-check form-switch'>
-          <Input type='switch' name='customSwitch' id='exampleCustomSwitch' defaultChecked />
-        </div>
       )
     },
     {
@@ -162,7 +178,7 @@ const NotificationDropdown = () => {
       <DropdownMenu end tag='ul' className='dropdown-menu-media mt-0'>
         <li className='dropdown-menu-header'>
           <DropdownItem className='d-flex' tag='div' header>
-            <h4 className='notification-title mb-0 me-auto'>Notifications</h4>
+            <h4 className='notification-title mb-0 me-auto'>Thông báo</h4>
             <Badge tag='div' color='light-primary' pill>
               6 New
             </Badge>
@@ -170,9 +186,9 @@ const NotificationDropdown = () => {
         </li>
         {renderNotificationItems()}
         <li className='dropdown-menu-footer'>
-          <Button color='primary' block>
+          {/* <Button color='primary' block>
             Read all notifications
-          </Button>
+          </Button> */}
         </li>
       </DropdownMenu>
     </UncontrolledDropdown>

@@ -189,7 +189,7 @@ const StepEvent = ({ stepper, cccd, data, status, changeInfo, changeData, change
     setIsTextVisible(!isTextVisible)
   }
   const handleOptionChange = (e) => {
-    setSelectedOption(e.target.value)
+    setSelectedOption(e.target.value === true)
   }
   const handleDownloadReport = async () => {
     try {
@@ -535,7 +535,7 @@ const StepEvent = ({ stepper, cccd, data, status, changeInfo, changeData, change
                           <Input
                             type="radio"
                             name="condition"
-                            value="bất thường"
+                            value={false}
                             checked={selectedOption === false}
                             onChange={handleOptionChange}
                           />
@@ -548,7 +548,7 @@ const StepEvent = ({ stepper, cccd, data, status, changeInfo, changeData, change
                           <Input
                             type="radio"
                             name="condition"
-                            value="bình thường"
+                            value={true}
                             checked={selectedOption === true}
                             onChange={handleOptionChange}
                           />

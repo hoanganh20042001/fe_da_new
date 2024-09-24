@@ -11,10 +11,11 @@ const IntlDropdown = () => {
 
   // ** Vars
   const langObj = {
-    en: 'English',
-    de: 'German',
-    fr: 'French',
-    pt: 'Portuguese'
+    vn:'Vietnamese',
+    // en: 'English',
+    // de: 'German',
+    // fr: 'French',
+    // pt: 'Portuguese',
   }
 
   // ** Function to switch Language
@@ -25,16 +26,24 @@ const IntlDropdown = () => {
 
   return (
     <UncontrolledDropdown href='/' tag='li' className='dropdown-language nav-item'>
-      <DropdownToggle href='/' tag='a' className='nav-link' onClick={e => e.preventDefault()}>
+      {/* <DropdownToggle href='/' tag='a' className='nav-link' onClick={e => e.preventDefault()}>
         <ReactCountryFlag
           svg
           className='country-flag flag-icon'
-          countryCode={i18n.language === 'en' ? 'us' : i18n.language}
+          countryCode={i18n.language === 'vn' ? 'vn' : i18n.language}
         />
         <span className='selected-language'>{langObj[i18n.language]}</span>
-      </DropdownToggle>
+      </DropdownToggle> */}
+      <DropdownItem href='/' tag='a' onClick={e => handleLangUpdate(e, 'vi')}>
+        <ReactCountryFlag className='country-flag' countryCode='vn' svg />
+        <span className='ms-1'>Vietnamese</span>
+      </DropdownItem>
       <DropdownMenu className='mt-0' end>
-        <DropdownItem href='/' tag='a' onClick={e => handleLangUpdate(e, 'en')}>
+      <DropdownItem href='/' tag='a' onClick={e => handleLangUpdate(e, 'vi')}>
+        <ReactCountryFlag className='country-flag' countryCode='vn' svg />
+        <span className='ms-1'>Vietnamese</span>
+      </DropdownItem>
+        {/* <DropdownItem href='/' tag='a' onClick={e => handleLangUpdate(e, 'en')}>
           <ReactCountryFlag className='country-flag' countryCode='us' svg />
           <span className='ms-1'>English</span>
         </DropdownItem>
@@ -49,7 +58,7 @@ const IntlDropdown = () => {
         <DropdownItem href='/' tag='a' onClick={e => handleLangUpdate(e, 'pt')}>
           <ReactCountryFlag className='country-flag' countryCode='pt' svg />
           <span className='ms-1'>Portuguese</span>
-        </DropdownItem>
+        </DropdownItem> */}
       </DropdownMenu>
     </UncontrolledDropdown>
   )

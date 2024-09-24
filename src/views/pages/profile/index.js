@@ -42,7 +42,7 @@ const Profile = () => {
     return state.profile.dataUser
   })
   
-  const user = JSON.parse(localStorage.getItem('userData'))
+  // const user = JSON.parse(localStorage.getItem('userData'))
   useEffect(() => {
     dispatch(getMe)
   }, [dispatch])
@@ -53,13 +53,13 @@ const Profile = () => {
         <div id='user-profile'>
           <Row>
             <Col sm='12'>
-              {/* <ProfileHeader data={dataUser} /> */}
+              <ProfileHeader data={dataUser} />
             </Col>
           </Row>
           <section id='profile-info'>
             <Row>
               <Col lg={{ size: 12, order: 12 }} sm={{ size: 12 }} xs={{ order: 12 }}>
-                {/* <ProfileAbout data={dataUser} /> */}
+                <ProfileAbout data={dataUser?.data} />
               </Col>
             </Row>
           </section>

@@ -36,7 +36,7 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
     </div>
 ))
 
-const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, changeStatus }) => {
+const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, changeData, changeStatus }) => {
     // ** States
     // const [modal, setModal] = useState(false)
     const [displaySelect, setDisplay] = useState(false)
@@ -62,6 +62,8 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
     const [isLoading, setIsLoading] = useState(false)
     const [download, setDownload] = useState('')
     const [doctorComment, setDoctorComment] = useState('')
+    const [checkss, setCheckss] = useState(null)
+    const [save, setSave] = useState(false)
     const toggle = (tab) => {
         if (activeTab !== tab) {
             setActiveTab(tab)
@@ -82,78 +84,7 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
 
     const navigate = useNavigate()
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0]
-        if (file) {
-            console.log(file)
-            setImg(file)
-            const newImageUrl = URL.createObjectURL(file)
-            setImageArray((prevImages) => {
-                const newArray = [...prevImages]
-                // if (!prevImages[0].src) {
-                //   newArray[0] = { src: newImageUrl }
-                // } else if (!prevImages[1].src) {
-                //   newArray[1] = { src: newImageUrl }
-                // } else {
-                newArray[0] = { src: newImageUrl }
-                // }
-                return newArray
-            })
-        } else {
-            setFileName('')
-        }
-    }
-    const checks = useSelector((state) => state.checks.checks)
-    const handleDetect = () => {
-        // const detectedImage = "http://localhost:8000/files/?file_path=files%5Cimg%5Cloading.gif"// Replace this with your detection logic
-        const url = process.env.REACT_APP_API_URL
-        const data1 = new FormData()
-        data1.append('file', img)
-        setIsLoading(true)
-        axios.post(`${url}/result/${cccd}`, data1,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-                },
-
-            }).then(response => {
-                setImageArray((prevImages) => {
-                    console.log(response)
-                    const check_id = response.data.data.check_id
-                    setCheck_id(check_id)
-                    console.log(response.data.data.check_id)
-                    dispatch(getById(check_id))
-                    setShowUpload(false)
-                    setShowDetect(false)
-                    setShowReport(true)
-                    setInfor(true)
-                    changeStatus(false)
-                    const newArray = [...prevImages]
-                    newArray[1] = { src: `http://localhost:8000/files/?file_path=${response.data.data.detected_image_path}` } // Giả định rằng response chứa URL ảnh mới
-                    return newArray
-                })
-                setIsLoading(false)
-
-            })
-            .catch(err => {
-
-                toast(
-                    <div className='d-flex'>
-                        <div className='me-1'>
-                            <Avatar size='sm' color='danger' icon={<X size={12} />} />
-                        </div>
-                        <div className='d-flex flex-column'>
-                            <h6>Có lỗi xảy ra!</h6>
-                        </div>
-                    </div>
-                )
-                setIsLoading(false)
-            })
-
-    }
-    const checkss = Array.isArray(checks.data) ? checks.data : []
-    console.log(checks)
+    console.log(data1)
     const onSubmit = data => {
         if (Object.values(data)) {
             return null
@@ -167,16 +98,29 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
             }
         }
     }
-    console.log(status)
+    // console.log(status)
+    // const checks = useSelector((state) => state.checks.checks)
+    // const checkss = Array.isArray(checks.data) ? checks.data : []
     useEffect(() => {
-        console.log(status)
-        if (status) {
-            setImageArray([{ src: "" }, { src: "" }])
-            setInfor(false)
-            setShowDetect(true)
-            setShowUpload(true)
-        }
-    }, [status])
+        setImageArray([{ src: `http://localhost:8000/files/?file_path=${data1}` }, { src: `http://localhost:8000/files/?file_path=${data2}` }])
+        // dispatch(getById(info))
+        const url = process.env.REACT_APP_API_URL
+        console.log(info)
+        axios.get(`${url}/checks/${info}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                //   Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+            }
+        }).then(res => {
+            console.log(res.data)
+            setCheckss(res.data.data)
+        })
+            .catch(err => {
+                setCheckss(null)
+            })
+        setSave(false)
+    }, [data1, data2])
+    console.log(checkss)
     const handleOnChangeSelect = (value, pop) => {
         changeInfo(value, pop)
         // console.log(infoDetect)
@@ -195,12 +139,12 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
         setIsTextVisible(!isTextVisible)
     }
     const handleOptionChange = (e) => {
-        setSelectedOption(e.target.value)
+        setSelectedOption(e.target.value === 'true')
     }
     const handleDownloadReport = async () => {
         try {
             const url = process.env.REACT_APP_API_URL
-            const response = await axios.get(`${url}/reports/${check_id}`, {
+            const response = await axios.get(`${url}/reports/${info}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     // Authorization: `Bearer ${localStorage.getItem("accessToken")}`
@@ -237,7 +181,7 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
             console.log(data)
             const url = process.env.REACT_APP_API_URL
             // Gọi API với phương thức PUT hoặc POST tùy theo API của bạn
-            const response = await axios.put(`${url}/checks/${check_id}`, data, {
+            const response = await axios.put(`${url}/checks/${info}`, data, {
                 headers: {
                     'Content-Type': 'application/json',
                     // Authorization: `Bearer ${localStorage.getItem("accessToken")}`
@@ -246,6 +190,7 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
             const status = response.data.code
             if (status === '000') {
                 console.log('Cập nhật thành công!')
+                changeStatus(true)
                 toast(
                     <div className='d-flex'>
                         <div className='me-1'>
@@ -256,6 +201,9 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
                         </div>
                     </div>
                 )
+                setSave(true)
+                setDoctorComment('')
+                setSelectedOption(true)
                 // Thêm logic để xử lý sau khi cập nhật thành công (nếu cần)
             }
         } catch (error) {
@@ -275,7 +223,6 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
 
     return (
         <Fragment>
-            {isLoading && (
                 <div style={{
                     position: 'fixed',
                     top: 0,
@@ -294,7 +241,6 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
                         style={{ width: '1000px', height: '800px' }} // Kích thước hình ảnh tải
                     />
                 </div>
-            )}
             <Card>
                 <CardHeader className='card_detect flex-md-row flex-column align-md-items-center align-items-start border-bottom' >
                     {/* <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>Tìm kiếm</CardTitle> */}
@@ -369,102 +315,107 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
                             <TabContent activeTab={activeTab}>
                                 <TabPane tabId="1">
                                     <Row>
-                                        {infor && (
-                                            <Card style={{ maxWidth: '320px', margin: 'auto' }}>
-                                                <CardBody>
-                                                    <CardTitle tag="h5" style={{ textAlign: 'center' }}>
-                                                        Thông tin bệnh
-                                                    </CardTitle>
-                                                    <Card
-                                                        className="user-info-card shadow-sm"
-                                                        style={{
-                                                            maxHeight: '700px',
-                                                            maxWidth: '300x',
-                                                            overflowY: 'auto',
-                                                        }}
-                                                    >
-                                                        <CardBody>
-                                                            <Row>
-                                                                {checkss.length > 0 ? (
-                                                                    <>
-                                                                        <ul>
-                                                                            {checkss.map((check, index) => {
-                                                                                const accuracyPercent = (check.accuracy * 100).toFixed(2)
-                                                                                const remainingPercent = (100 - accuracyPercent).toFixed(2)
+                                    <CardTitle tag="h5" style={{ textAlign: 'center' }}>
+                                                    Quân nhân: {name}
+                                                </CardTitle>
+                                    </Row>
+                                    <Row>
+                                        {/* {infor && ( */}
+                                        <Card style={{ maxWidth: '320px', margin: 'auto' }}>
+                                            <CardBody>
+                                                <CardTitle tag="h5" style={{ textAlign: 'center' }}>
+                                                    Thông tin bệnh
+                                                </CardTitle>
+                                                <Card
+                                                    className="user-info-card shadow-sm"
+                                                    style={{
+                                                        maxHeight: '700px',
+                                                        maxWidth: '300x',
+                                                        overflowY: 'auto',
+                                                    }}
+                                                >
+                                                    <CardBody>
+                                                        <Row>
+                                                            {checkss?.length > 0 ? (
+                                                                <>
+                                                                    <ul>
+                                                                        {checkss.map((check, index) => {
+                                                                            const accuracyPercent = (check.accuracy * 100).toFixed(2)
+                                                                            const remainingPercent = (100 - accuracyPercent).toFixed(2)
 
-                                                                                return (
-                                                                                    <li
-                                                                                        key={index}
+                                                                            return (
+                                                                                <li
+                                                                                    key={index}
+                                                                                    style={{
+                                                                                        padding: '10px',
+                                                                                        marginBottom: '5px',
+                                                                                        borderRadius: '4px',
+                                                                                    }}
+                                                                                >
+                                                                                    <strong>{check.name}</strong>
+                                                                                    <div
                                                                                         style={{
-                                                                                            padding: '10px',
-                                                                                            marginBottom: '5px',
-                                                                                            borderRadius: '4px',
+                                                                                            display: 'flex',
+                                                                                            alignItems: 'center',
+                                                                                            marginTop: '5px',
                                                                                         }}
                                                                                     >
-                                                                                        <strong>{check.name}</strong>
+                                                                                        {/* Cột chính hiển thị phần trăm */}
                                                                                         <div
                                                                                             style={{
-                                                                                                display: 'flex',
-                                                                                                alignItems: 'center',
-                                                                                                marginTop: '5px',
+                                                                                                width: `${accuracyPercent}%`,
+                                                                                                backgroundColor: '#007bff', // Màu của cột chính
+                                                                                                height: '20px',
+                                                                                                borderRadius: '4px 0 0 4px', // Góc bo chỉ bên trái
                                                                                             }}
-                                                                                        >
-                                                                                            {/* Cột chính hiển thị phần trăm */}
-                                                                                            <div
-                                                                                                style={{
-                                                                                                    width: `${accuracyPercent}%`,
-                                                                                                    backgroundColor: '#007bff', // Màu của cột chính
-                                                                                                    height: '20px',
-                                                                                                    borderRadius: '4px 0 0 4px', // Góc bo chỉ bên trái
-                                                                                                }}
-                                                                                            ></div>
+                                                                                        ></div>
 
-                                                                                            {/* Cột nền mờ hiển thị phần trăm còn lại */}
-                                                                                            <div
-                                                                                                style={{
-                                                                                                    width: `${remainingPercent}%`,
-                                                                                                    backgroundColor: 'rgba(0, 123, 255, 0.2)', // Màu nền mờ với độ trong suốt
-                                                                                                    height: '20px',
-                                                                                                    borderRadius: '0 4px 4px 0', // Góc bo chỉ bên phải
-                                                                                                }}
-                                                                                            ></div>
+                                                                                        {/* Cột nền mờ hiển thị phần trăm còn lại */}
+                                                                                        <div
+                                                                                            style={{
+                                                                                                width: `${remainingPercent}%`,
+                                                                                                backgroundColor: 'rgba(0, 123, 255, 0.2)', // Màu nền mờ với độ trong suốt
+                                                                                                height: '20px',
+                                                                                                borderRadius: '0 4px 4px 0', // Góc bo chỉ bên phải
+                                                                                            }}
+                                                                                        ></div>
 
-                                                                                            <span style={{ marginLeft: '10px' }}>{accuracyPercent}%</span>
-                                                                                        </div>
-                                                                                    </li>
-                                                                                )
-                                                                            })}
-                                                                        </ul>
-                                                                    </>
-                                                                ) : (
-                                                                    <CardText>Không có thông tin bệnh.</CardText>
-                                                                )}
-                                                            </Row>
+                                                                                        <span style={{ marginLeft: '10px' }}>{accuracyPercent}%</span>
+                                                                                    </div>
+                                                                                </li>
+                                                                            )
+                                                                        })}
+                                                                    </ul>
+                                                                </>
+                                                            ) : (
+                                                                <CardText>Không có thông tin bệnh.</CardText>
+                                                            )}
+                                                        </Row>
 
 
-                                                        </CardBody>
+                                                    </CardBody>
 
-                                                    </Card>
-                                                </CardBody>
-                                                {checkss.length > 0 ? (
-                                                    <Button
-                                                        color="primary"
-                                                        className="d-flex align-items-center mt-2"
-                                                        style={{
-                                                            width: '150px', // Giảm chiều rộng của nút
-                                                            padding: '0.8rem', // Giữ nguyên padding để chiều cao không thay đổi
-                                                            margin: '0 auto',  // Căn giữa nút theo chiều ngang
-                                                            display: 'block',
-                                                        }}
-                                                    >
-                                                        <Eye size={16} className="me-2" />
-                                                        Xem chi tiết
-                                                    </Button>
-                                                ) : (
-                                                    <></>
-                                                )}
-                                            </Card>
-                                        )}
+                                                </Card>
+                                            </CardBody>
+                                            {checkss?.length > 0 ? (
+                                                <Button
+                                                    color="primary"
+                                                    className="d-flex align-items-center mt-2"
+                                                    style={{
+                                                        width: '150px', // Giảm chiều rộng của nút
+                                                        padding: '0.8rem', // Giữ nguyên padding để chiều cao không thay đổi
+                                                        margin: '0 auto',  // Căn giữa nút theo chiều ngang
+                                                        display: 'block',
+                                                    }}
+                                                >
+                                                    <Eye size={16} className="me-2" />
+                                                    Xem chi tiết
+                                                </Button>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </Card>
+                                        {/* )} */}
                                     </Row>
                                 </TabPane>
 
@@ -497,7 +448,7 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
                                                     <Input
                                                         type="radio"
                                                         name="condition"
-                                                        value="bất thường"
+                                                        value={false}
                                                         checked={selectedOption === false}
                                                         onChange={handleOptionChange}
                                                     />
@@ -510,7 +461,7 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
                                                     <Input
                                                         type="radio"
                                                         name="condition"
-                                                        value="bình thường"
+                                                        value={true}
                                                         checked={selectedOption === true}
                                                         onChange={handleOptionChange}
                                                     />
@@ -522,6 +473,7 @@ const StepEvent = ({ stepper, info, data, status, changeInfo, changeData, change
                                                 color="primary"
                                                 className="mt-2"
                                                 onClick={handleSave} // Implement handleSave to manage saving the comment
+                                                disabled={save}
                                             >
                                                 Lưu
                                             </Button>
