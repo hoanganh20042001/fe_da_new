@@ -4,7 +4,7 @@ import CartDropdown from './CartDropdown'
 import UserDropdown from './UserDropdown'
 import NavbarSearch from './NavbarSearch'
 import NotificationDropdown from './NotificationDropdown'
-
+import { Fragment, useState, useEffect } from 'react'
 // ** Third Party Components
 import { Sun, Moon } from 'react-feather'
 
@@ -23,7 +23,17 @@ const NavbarUser = props => {
       return <Moon className='ficon' onClick={() => setSkin('dark')} />
     }
   }
+  const role_id = localStorage.getItem('role_id')
+  const [showNotification, setShowNotification] = useState(false)
 
+  useEffect(() => {
+    console.log(role_id)
+    if (role_id === 'D') {
+      setShowNotification(true)
+    } else {
+      setShowNotification(false)
+    }
+  }, [role_id])
   return (
     <ul className='nav navbar-nav align-items-center ms-auto' >
       <IntlDropdown />
@@ -34,7 +44,7 @@ const NavbarUser = props => {
       </NavItem>
       <NavbarSearch />
       {/* <CartDropdown /> */}
-      <NotificationDropdown />
+      {showNotification && <NotificationDropdown />}
       <UserDropdown />
     </ul>
   )

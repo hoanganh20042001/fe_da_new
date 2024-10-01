@@ -17,7 +17,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import Viewer from 'react-viewer'
 import { getById } from '@store/action/checks'
 import StatsHorizontal from '@components/widgets/stats/StatsHorizontal'
-import loadingImage from '../../../../assets/images/loader/Curve-Loading.gif'
+// import loadingImage from '../../../../assets/images/loader/Curve-Loading.gif'
 import classnames from 'classnames'
 // ** Reactstrap Imports
 import {
@@ -59,7 +59,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
     const viewerRef = useRef(null)
     const [activeTab, setActiveTab] = useState('1')
     const [selectedOption, setSelectedOption] = useState(true)
-    const [isLoading, setIsLoading] = useState(false)
+    // const [isLoading, setIsLoading] = useState(false)
     const [download, setDownload] = useState('')
     const [doctorComment, setDoctorComment] = useState('')
     const [checkss, setCheckss] = useState(null)
@@ -102,7 +102,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
     // const checks = useSelector((state) => state.checks.checks)
     // const checkss = Array.isArray(checks.data) ? checks.data : []
     useEffect(() => {
-        setImageArray([{ src: `http://localhost:8000/files/?file_path=${data1}` }, { src: `http://localhost:8000/files/?file_path=${data2}` }])
+        setImageArray([{ src: `http://127.0.0.1:8000/files/?file_path=${data1}` }, { src: `http://127.0.0.1:8000/files/?file_path=${data2}` }])
         // dispatch(getById(info))
         const url = process.env.REACT_APP_API_URL
         console.log(info)
@@ -190,7 +190,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
             const status = response.data.code
             if (status === '000') {
                 console.log('Cập nhật thành công!')
-                changeStatus(true)
+                // changeStatus(true)
                 toast(
                     <div className='d-flex'>
                         <div className='me-1'>
@@ -202,8 +202,9 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                     </div>
                 )
                 setSave(true)
-                setDoctorComment('')
-                setSelectedOption(true)
+                // setDoctorComment('')
+                // setSelectedOption(true)
+
                 // Thêm logic để xử lý sau khi cập nhật thành công (nếu cần)
             }
         } catch (error) {
@@ -223,7 +224,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
 
     return (
         <Fragment>
-                <div style={{
+            {/* <div style={{
                     position: 'fixed',
                     top: 0,
                     left: 0,
@@ -240,12 +241,20 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                         alt="Loading..."
                         style={{ width: '1000px', height: '800px' }} // Kích thước hình ảnh tải
                     />
-                </div>
+                </div> */}
             <Card>
                 <CardHeader className='card_detect flex-md-row flex-column align-md-items-center align-items-start border-bottom' >
                     {/* <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>Tìm kiếm</CardTitle> */}
                     <div className='d-flex mt-md-0 mt-1'>
-                        <Button type='button' color='primary' className='btn-prev' onClick={() => stepper.previous()}>
+                        <Button type='button' color='primary' className='btn-prev'
+                            onClick={() => {
+                                stepper.previous()
+                                // window.location.reload()
+                                changeStatus(true)
+                                setDoctorComment('')
+                                setSelectedOption(true)
+                            }
+                            }>
                             <ArrowLeft size={14} className='align-middle me-sm-25 me-0'></ArrowLeft><span className='align-middle ms-50'>Quay lại</span>
                         </Button>
                     </div>
@@ -315,9 +324,9 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                             <TabContent activeTab={activeTab}>
                                 <TabPane tabId="1">
                                     <Row>
-                                    <CardTitle tag="h5" style={{ textAlign: 'center' }}>
-                                                    Quân nhân: {name}
-                                                </CardTitle>
+                                        <CardTitle tag="h5" style={{ textAlign: 'center' }}>
+                                            Quân nhân: {name}
+                                        </CardTitle>
                                     </Row>
                                     <Row>
                                         {/* {infor && ( */}
@@ -494,7 +503,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
         `}
             </style>
 
-        </Fragment>
+        </Fragment >
     )
 }
 

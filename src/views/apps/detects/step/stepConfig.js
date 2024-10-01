@@ -149,10 +149,13 @@ const StepConfig = ({ stepper, info, status, changeInfo, changeData1, changeData
             pageSize: 9,
             page: currentPage + 1,
             search_text: searchText,
-            status: selectedOption,
+            status: 2,
         }))
         if (KL) {
             setIsKL(false)
+          }
+          if (status) {
+            changeStatus(false)
           }
     }, [dispatch, currentPage, searchText, status, selectedOption, KL])
    
@@ -282,13 +285,13 @@ const StepConfig = ({ stepper, info, status, changeInfo, changeData1, changeData
                                 placeholder='Tìm kiếm tên quân nhân'
                             />
                         </div>
-                        <Input className='w-auto ' type='select' value={selectedOption} onChange={handleSelectChange}>
+                        {/* <Input className='w-auto ' type='select' value={selectedOption} onChange={handleSelectChange}>
                             <option value='0'>Tất cả</option>
                             <option value='1'>Quân nhân đã chẩn đoán</option>
                             <option value='2'>Quân nhân chưa chẩn đoán</option>
                             <option value='3'>Quân nhân bị bệnh</option>
                             <option value='4'>Quân nhân bình thường</option>
-                        </Input>
+                        </Input> */}
                     </Col>
                 </Row>
                 <Row className='justify-content-end mx-0'>

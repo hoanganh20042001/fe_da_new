@@ -20,163 +20,92 @@ import {
 
 const RevenueReport = props => {
   // ** State
-  const [data, setData] = useState(null)
   const [revenueOptions, setOption] = useState({})
-  // useEffect(() => {
-  //   const url = process.env.REACT_APP_API_URL
-  //   axios.get(`${url}/experiment/draw-exp-chart/`).then(res => {
-  //     const list = []
-  //     const cate = []
-  //     const temp = res.data.data
-  //     temp.list_result.map(item => {
-  //       list.push(item.count_exp)
-  //       cate.push(item.time)
-  //     })
-  //     setData(list)
-  //     setOption({
-  //       chart: {
-  //         stacked: true,
-  //         type: 'bar',
-  //         toolbar: { show: false }
-  //       },
-  //       grid: {
-  //         padding: {
-  //           top: -20,
-  //           bottom: -10
-  //         },
-  //         yaxis: {
-  //           lines: { show: false }
-  //         }
-  //       },
-  //       xaxis: {
-  //         categories: cate,
-  //         labels: {
-  //           hideOverlappingLabels: true,
-  //           style: {
-  //             colors: '#b9b9c3',
-  //             fontSize: '0.86rem'
-  //           },
+  const [data, setData] = useState([])
+  const [list, setList] = useState([])
+  const [cate, setCate] = useState([])
+  // const [option, setOption] = useState({})
 
-  //         },
-  //         axisTicks: {
-  //           show: false
-  //         },
-  //         axisBorder: {
-  //           show: false
-  //         }
-  //       },
-  //       legend: {
-  //         show: false
-  //       },
-  //       dataLabels: {
-  //         enabled: false
-  //       },
-  //       colors: [props.primary, props.warning],
-  //       plotOptions: {
-  //         bar: {
-  //           columnWidth: '17%',
-  //           borderRadius: [5]
-  //         },
-  //         distributed: true
-  //       },
-  //       yaxis: {
-  //         labels: {
-  //           style: {
-  //             colors: '#b9b9c3',
-  //             fontSize: '0.86rem'
-  //           }
-  //         }
-  //       }
-  //     },)
-  //   })
-  // }, [])
-
+  // Fetch data from API
   useEffect(() => {
-    // Giả lập dữ liệu từ API
-    const fakeData = {
-      data: {
-        list_result: [
-          { count_exp: 30, time: 'AE' },
-          { count_exp: 40, time: 'Atelectasis' },
-          { count_exp: 35, time: 'Calcification' },
-          { count_exp: 50, time: 'Cardiomegaly' },
-          { count_exp: 45, time: 'Consolidation' },
-          { count_exp: 30, time: 'ILD' },
-          { count_exp: 40, time: 'Infiltration' },
-          { count_exp: 35, time: 'LO' },
-          { count_exp: 50, time: 'Nodule/Mass' },
-          { count_exp: 45, time: 'OL' },
-          { count_exp: 30, time: 'PE' },
-          { count_exp: 40, time: 'PT' },
-          { count_exp: 35, time: 'Pneumothorax' },
-          { count_exp: 50, time: 'PF' },
-        ]
-      }
-    }
-
-    const list = []
-    const cate = []
-    const temp = fakeData.data
-    temp.list_result.map(item => {
-      list.push(item.count_exp)
-      cate.push(item.time)
+    const url = process.env.REACT_APP_API_URL
+    axios.get(`${url}/statistical/disases/`).then(res => {
+      setData(res.data) // Set fetched data
+      console.log(res.data)
     })
-    setData(list)
-    setOption({
-      chart: {
-        stacked: true,
-        type: 'bar',
-        toolbar: { show: false }
-      },
-      grid: {
-        padding: {
-          top: -20,
-          bottom: -10
+  }, []) // Empty dependency ensures it only runs on mount
+
+  // Update list and cate when `data` changes
+  useEffect(() => {
+    const newList = []
+    const newCate = []
+    data.forEach(item => {
+      newList.push(item.disease_name)
+      newCate.push(item.patient_count)
+    })
+    setList(newList) // Set list of disease names
+    setCate(newCate) // Set list of patient counts
+  }, [data]) // Dependency on `data` ensures it runs after `data` is updated
+
+  // Update chart options when `list`, `cate`, or props change
+  useEffect(() => {
+    if (list.length > 0 && cate.length > 0) {
+      setOption({
+        chart: {
+          stacked: true,
+          type: 'bar',
+          toolbar: { show: false }
+        },
+        grid: {
+          padding: {
+            top: -20,
+            bottom: -10
+          },
+          yaxis: {
+            lines: { show: false }
+          }
+        },
+        xaxis: {
+          categories: list, // Use `list` as categories (disease names)
+          labels: {
+            hideOverlappingLabels: true,
+            style: {
+              colors: '#b9b9c3',
+              fontSize: '0.86rem'
+            }
+          },
+          axisTicks: {
+            show: false
+          },
+          axisBorder: {
+            show: false
+          }
+        },
+        legend: {
+          show: false
+        },
+        dataLabels: {
+          enabled: false
+        },
+        colors: [props.primary, props.warning],
+        plotOptions: {
+          bar: {
+            columnWidth: '10%',
+            borderRadius: [5]
+          },
+          distributed: true
         },
         yaxis: {
-          lines: { show: false }
-        }
-      },
-      xaxis: {
-        categories: cate,
-        labels: {
-          hideOverlappingLabels: true,
-          style: {
-            colors: '#b9b9c3',
-            fontSize: '0.86rem'
-          },
-        },
-        axisTicks: {
-          show: false
-        },
-        axisBorder: {
-          show: false
-        }
-      },
-      legend: {
-        show: false
-      },
-      dataLabels: {
-        enabled: false
-      },
-      colors: [props.primary, props.warning],
-      plotOptions: {
-        bar: {
-          columnWidth: '10%',
-          borderRadius: [5]
-        },
-        distributed: true
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: '#b9b9c3',
-            fontSize: '0.5rem'
+          labels: {
+            style: {
+              colors: '#b9b9c3',
+              fontSize: '0.5rem'
+            }
           }
         }
-      }
-    })
-  }, [props.primary, props.warning])
+      })
+    }
+  }, [list, cate, props.primary, props.warning])
 
   return data !== null ? (
     <Card className='card-revenue-budget'>
@@ -189,7 +118,7 @@ const RevenueReport = props => {
             data && <Chart id='revenue-report-chart' height='380' options={revenueOptions} series={[
               {
                 name: 'Earning',
-                data: data
+                data: cate
               }
             ]} />
           }

@@ -12,9 +12,9 @@ import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
 import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
-import { get, update, dels, add } from '@store/action/units'
+import { get, update, delet, add } from '@store/action/units'
 import { toDateStringFormat1, toDateString } from '@utils'
-
+import axios from 'axios'
 // ** Reactstrap Imports
 import {
   Row,
@@ -32,7 +32,8 @@ import {
   Modal,
   ModalBody,
   ModalHeader, ModalFooter,
-  Badge
+  Badge,
+  FormGroup
 } from 'reactstrap'
 import { format } from 'prettier'
 import { getListUser } from '../../../redux/action/profile'
@@ -51,26 +52,58 @@ const ManageUnits = () => {
   const [currentPage, setCurrentPage] = useState(0)
   const [searchValue, setSearchValue] = useState('')
   const [filteredData, setFilteredData] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [showEdit, setShowEdit] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [infoData, setInfo] = useState({
   })
-
+  const [id, setId] = useState(0)
+  const [unitFather, setUnitFather] = useState([])
   const [picker, setPicker] = useState(new Date())
   const [object, setObject] = useState(true)
   const [edit, setEdit] = useState(true)
-  const [infoaddData, setInfoadd] = useState({
-    softwarelibname: '',
-    softwareliburl: '',
-    softwarelibdescription: '',
+  const [infoAddData, setInfoAdd] = useState({
+    name: '',
+    symbol: '',
+    description: '',
+    unit_father_id: 1,
   })
-  const [file, setFile] = useState()
-  const [valErrors, setValErrors] = useState({
-    softwarelibname: '',
-    softwareliburl: '',
-    softwarelibdescription: '',
-  })
+  useEffect(() => {
+    const url = process.env.REACT_APP_API_URL
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `${url}/units/?page_size=100&page=1&sort_by=id&order=desc`,
+          {
+            headers: {
+              'content-type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        )
+        console.log(response.data.data.data)
+        setUnitFather(response.data.data.data) // Lưu dữ liệu vào state
+      } catch (error) {
+        console.error("Error fetching data", error)
+      }
+    }
+
+    fetchData() // Gọi API khi component mount
+  }, [])
+  const handleOnChangeSelect = (selectedUnit) => {
+    setInfo({
+      ...infoData,
+      unit_father_id: selectedUnit?.id,  // Cập nhật unit_id
+      unit_father: selectedUnit?.name  // Cập nhật unit_name
+    })
+  }
+  const filteredUnits = unitFather
+    .filter(unit => unit.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .map(unit => ({
+      id: unit.id,
+      name: unit.name
+    }))
   const units = useSelector((state) => {
     return state.units.units
   })
@@ -93,61 +126,35 @@ const ManageUnits = () => {
 
   const handleDelete = (data) => {
     setShowDelete(true)
-    setInfo({
-      softwarelibid: data.softwarelibid,
-      softwarelibname: data.softwarelibname,
-      softwareliburl: data.softwareliburl,
-      softwarelibdescription: data.softwarelibdescription,
-    })
+    setId(data.id)
   }
   const role = localStorage.getItem('role_id')
-  console.log(role)
+
   const handleUpdate = () => {
-    if (infoData.softwarelibname.trim() !== '' && infoData.softwareliburl.trim() !== '') {
-      dispatch(updateLibs(infoData))
-      setEdit(true)
-      setShowEdit(false)
-      setValErrors({
-        softwarelibname: '',
-        softwareliburl: '',
-        softwarelibdescription: '',
-      })
-    } else {
-      let temp = valErrors
-
-      if (infoData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } }
-      if (infoData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } }
-      setValErrors(temp)
-
-    }
+    dispatch(update(infoData))
+    setEdit(true)
+    setShowEdit(false)
 
   }
   const handleAdd = () => {
-    if (infoaddData.softwarelibname.trim() !== '' && infoaddData.softwareliburl.trim() !== '') {
-      // console.log(infoaddData)
-      dispatch(addLibs(infoaddData))
-      setShowAdd(false)
-      setValErrors({
-        softwarelibname: '',
-        softwareliburl: '',
-        softwarelibdescription: '',
-      })
-    } else {
-      let temp = valErrors
-      if (infoaddData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } }
-      if (infoaddData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } }
-      setValErrors(temp)
-    }
+
+    dispatch(add(infoAddData))
+    setShowAdd(false)
 
   }
   const handleDelet = () => {
-    dispatch(deleteLibs(infoData.softwarelibid))
+    dispatch(delet(id))
     setShowDelete(false)
   }
   const handleHistory = (data) => {
     navigate(`/managements/userHistory/${data}`)
   }
-
+  const handleOnAddSelect = (selectedUnit) => {
+    setInfoAdd({
+      ...infoAddData,
+      unit_id: selectedUnit?.id,  // Cập nhật unit_id
+    })
+  }
   const onSubmit = data => {
     if (Object.values(data)) {
       return null
@@ -164,10 +171,12 @@ const ManageUnits = () => {
   const handleEdit = (data) => {
     setShowEdit(true)
     setInfo({
+      id: data.id,
       name: data.name,
       symbol: data.symbol,
-      description: data.description,
+      description: data.description ? data.description : "",
       unit_father: data.unit_father,
+      unit_father_id: data.unit_father_id
     })
   }
   const handleOnChange = (data, pop) => {
@@ -181,14 +190,7 @@ const ManageUnits = () => {
     else return false
   }
   const handleOnChangeAdd = (data, pop) => {
-    if (data === null || data === undefined || data === "") {
-      setValErrors({ ...valErrors, [pop]: 'Không được để trống' })
-    } else {
-      setValErrors({ ...valErrors, [pop]: null })
-    }
-    // console.log([pop])
-
-    setInfoadd({ ...infoaddData, [pop]: data })
+    setInfoAdd({ ...infoAddData, [pop]: data })
   }
 
   const columns = [
@@ -357,39 +359,51 @@ const ManageUnits = () => {
 
                 Tên đơn vị  <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input id='softwarelibname' type='text' value={infoData.name} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
+              <Input id='softwarelibname' type='text' value={infoData.name} onChange={(e) => handleOnChange(e.target.value, "name")} />
+
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='symbol'>
 
                 Ký hiệu  <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input id='sumbol' type='text' value={infoData.symbol} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibname'>
+              <Input id='sumbol' type='text' value={infoData.symbol} onChange={(e) => handleOnChange(e.target.value, "symbol")} />
 
-                Đơn vị cấp trên  <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwarelibname' type='text' value={infoData.unit_father} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='softwarelibdescription'>
                 Mô tả
               </Label>
-              <Input id='softwarelibdescription' type='text' value={infoData.description} onChange={(e) => handleOnChange(e.target.value, "softwarelibdescription")} readOnly={edit} />
+              <Input id='softwarelibdescription' type='text' value={infoData.description} onChange={(e) => handleOnChange(e.target.value, "description")} />
+            </Col>
+            <Col md={12} xs={12}>
+              <FormGroup>
+                <Label className='form-label' for='unit'>
+                  Đơn vị cấp trên
+                </Label>
+                <Input
+                  id='unit'
+                  type='select'
+                  value={infoData.unit_father}
+                  onChange={(e) => {
+                    console.log(e.target.value)
+                    const selectedUnit = filteredUnits.find(unit => unit.id === parseInt(e.target.value))  // Tìm đơn vị
+                    console.log(selectedUnit)
+                    handleOnChange(selectedUnit.name, "unit_father")
+                    handleOnChangeSelect(selectedUnit)
+                  }}
+                >
+                  {/* Hiển thị danh sách các đơn vị */}
+                  {filteredUnits.map(unit => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
             </Col>
             <Col xs={12} className='text-center mt-2 pt-50'>
-              {
-                role === 'A' ? <></> : <Button type='submit' className='me-1' color='primary' onClick={e => setEdit(false)} style={{ display: edit === true ? 'inline-block' : 'none' }}>
-                  Chỉnh sửa
-                </Button>
-              }
-
-              <Button type='submit' className='me-1' color='primary' onClick={handleUpdate} style={{ display: edit === true ? 'none' : 'inline-block' }}>
+              <Button type='submit' className='me-1' color='primary' onClick={handleUpdate} style={{ display: 'inline-block' }}>
                 Cập nhật
               </Button>
               <Button type='reset' color='secondary' outline onClick={() => {
@@ -414,30 +428,47 @@ const ManageUnits = () => {
               <Label className='form-label' for='softwarelibname'>
                 Tên đơn vị <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input id='softwarelibname' type='text' value={infoaddData.softwarelibname} onChange={(e) => handleOnChangeAdd(e.target.value, "softwarelibname")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
+              <Input id='softwarelibname' type='text' value={infoAddData.name} onChange={(e) => handleOnChangeAdd(e.target.value, "name")} />
+
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='symbol'>
                 Ký hiệu <span style={{ color: 'red' }}>*</span>
               </Label>
-              <Input id='symbol' type='text' value={infoaddData.softwarelibname} onChange={(e) => handleOnChangeAdd(e.target.value, "softwarelibname")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibname'>
+              <Input id='symbol' type='text' value={infoAddData.symbol} onChange={(e) => handleOnChangeAdd(e.target.value, "symbol")} />
 
-                Đơn vị cấp trên  <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwarelibname' type='text' value={infoData.softwarelibname} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='softwarelibdescription'>
                 Mô tả
               </Label>
-              <Input id='softwarelibdescription' type='text' value={infoaddData.softwarelibdescription} onChange={(e) => handleOnChangeAdd(e.target.value, "softwarelibdescription")} />
+              <Input id='softwarelibdescription' type='text' value={infoAddData.description} onChange={(e) => handleOnChangeAdd(e.target.value, "description")} />
             </Col>
+            <Col md={12} xs={12}>
+              <FormGroup>
+                <Label className='form-label' for='unit'>
+                  Đơn vị cấp trên
+                </Label>
+                <Input
+                  id='unit'
+                  type='select'
+                  // defaultValue={filteredUnits.length > 0 ? filteredUnits[0].name : ''}
+                  onChange={(e) => {
+                    console.log(e.target.value)
+                    const selectedUnit = filteredUnits.find(unit => unit.id === parseInt(e.target.value))  // Tìm đơn vị
+                    console.log(selectedUnit)
+                    handleOnAddSelect(selectedUnit)
+                  }}
+                >
+                  {filteredUnits.map(unit => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
+
             <Col xs={12} className='text-center mt-2 pt-50'>
               <Button type='submit' className='me-1' color='primary' onClick={handleAdd} >
                 Thêm mới

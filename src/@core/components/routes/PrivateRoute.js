@@ -9,7 +9,8 @@ const PrivateRoute = ({ children, route }) => {
   // ** Hooks & Vars
   const ability = useContext(AbilityContext)
   const user = JSON.parse(localStorage.getItem('userData'))
-
+  const role_id = localStorage.getItem('role_id')
+console.log(!user)
   if (route) {
     let action = null
     let resource = null
@@ -20,18 +21,18 @@ const PrivateRoute = ({ children, route }) => {
       resource = route.meta.resource
       restrictedRoute = route.meta.restricted
     }
-    if (!user) {
+    if (!role_id) {
       return <Navigate to='/login' />
     }
-    if (user && restrictedRoute) {
+    if (role_id && restrictedRoute) {
       return <Navigate to='/' />
     }
-    if (user && restrictedRoute && user.role === 'client') {
+    if (restrictedRoute && role_id === 'client') {
       return <Navigate to='/access-control' />
     }
-    if (user && !ability.can(action || 'read', resource)) {
-      return <Navigate to='/misc/not-authorized' replace />
-    }
+    // if (role_id && !ability.can(action || 'read', resource)) {
+    //   return <Navigate to='/misc/not-authorized' replace />
+    // }
   }
 
   return <Suspense fallback={null}>{children}</Suspense>

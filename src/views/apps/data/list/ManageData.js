@@ -10,7 +10,7 @@ import Avatar from '@components/avatar'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, UserPlus, Upload, User, Shield, Home, CreditCard, X } from 'react-feather'
+import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, UserPlus, Upload, User, Shield, Home, CreditCard, X, Loader } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
 import { toDateString, toDateStringFormat1 } from '@utils'
 import { get, update, add, delet } from '@store/action/patients'
@@ -35,7 +35,8 @@ import {
   Badge,
   Form,
   FormGroup,
-  Table
+  Table,
+  Spinner
 } from 'reactstrap'
 
 // ** Bootstrap Checkbox Component
@@ -58,6 +59,7 @@ const ManageData = () => {
   const [showAdd, setShowAdd] = useState(false)
   const [infoData, setInfo] = useState({
   })
+  const [uploadingRowId, setUploadingRowId] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFile, setSelectedFile] = useState(null)
   const [showUpload, setShowUpload] = useState(false)
@@ -128,6 +130,7 @@ const ManageData = () => {
       )
       setShowUpload(false)
     }
+    setUploadingRowId(soldierInfo.cccd)
     axios.post(`${url}/result/${soldierInfo.cccd}`, data1,
       {
         headers: {
@@ -137,6 +140,7 @@ const ManageData = () => {
 
       }).then(response => {
         setIsSaved(true)
+        setUploadingRowId(null) 
       })
       .catch(err => {
         dispatch(get({
@@ -245,7 +249,7 @@ const ManageData = () => {
   }
   const handleDelete = () => {
     dispatch(delet(id))
-    
+
     setShowDelete(false)
   }
 
@@ -411,8 +415,18 @@ const ManageData = () => {
             <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
             <Trash size={15} onClick={() => handleDelet(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
             {row.status !== false && (
-              <Upload size={15} onClick={() => handleUpload(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />)}
-
+              <>
+                {uploadingRowId === row.identification ? (
+                  <Spinner size="sm" style={{ marginLeft: '6px' }} /> // Show Spinner if this row is uploading
+                ) : (
+                  <Upload
+                    size={15}
+                    onClick={() => handleUpload(row)}
+                    style={{ cursor: 'pointer', marginLeft: '6px' }}
+                  />
+                )}
+              </>
+            )}
           </div>
         )
       }
