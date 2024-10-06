@@ -1,15 +1,15 @@
 // ** React Imports
-import { Fragment, useState, forwardRef, useEffect } from 'react'
+import { Fragment, useState, forwardRef, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
-
+import Viewer from 'react-viewer'
 // ** Table Data & Columns
 import { Controller, useForm } from 'react-hook-form'
 import Avatar from '@components/avatar'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard } from 'react-feather'
+import { ChevronDown, Share, Printer, FileText, File, Grid, Copy, Plus, Edit, Trash, Check, Clipboard, Eye } from 'react-feather'
 import { useSelector, useDispatch } from 'react-redux'
 import { get, update, dels, add } from '@store/action/checks'
 import { toDateStringFormat1, toDateString } from '@utils'
@@ -31,7 +31,8 @@ import {
   Modal,
   ModalBody,
   ModalHeader, ModalFooter,
-  Badge
+  Badge,
+  CardBody
 } from 'reactstrap'
 import { format } from 'prettier'
 import { getListUser } from '../../../redux/action/profile'
@@ -79,7 +80,7 @@ const ManageHistories = () => {
       pageNumber: currentPage + 1
     }))
   }, [dispatch, currentPage])
-console.log(checks)
+  console.log(checks)
   const {
     control,
     setError,
@@ -88,37 +89,8 @@ console.log(checks)
   } = useForm()
 
   const navigate = useNavigate()
-
-  const handleDelete = (data) => {
-    setShowDelete(true)
-    setInfo({
-      softwarelibid: data.softwarelibid,
-      softwarelibname: data.softwarelibname,
-      softwareliburl: data.softwareliburl,
-      softwarelibdescription: data.softwarelibdescription,
-    })
-  }
   const role = localStorage.getItem('role_id')
-  const handleUpdate = () => {
-    if (infoData.softwarelibname.trim() !== '' && infoData.softwareliburl.trim() !== '') {
-      dispatch(updateLibs(infoData))
-      setEdit(true)
-      setShowEdit(false)
-      setValErrors({
-        softwarelibname: '',
-        softwareliburl: '',
-        softwarelibdescription: '',
-      })
-    } else {
-      let temp = valErrors
-
-      if (infoData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } } 
-      if (infoData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } } 
-      setValErrors(temp)
-
-    }
-
-  }
+  
   const handleAdd = () => {
     if (infoaddData.softwarelibname.trim() !== '' && infoaddData.softwareliburl.trim() !== '') {
       // console.log(infoaddData)
@@ -131,16 +103,13 @@ console.log(checks)
       })
     } else {
       let temp = valErrors
-      if (infoaddData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } } 
-      if (infoaddData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } } 
+      if (infoaddData.softwarelibname.trim() === '' || infoaddData.softwarelibname === undefined) { temp = { ...temp, softwarelibname: 'Không được để trống tên thư viện' } }
+      if (infoaddData.softwareliburl.trim() === '' || infoaddData.softwareliburl === undefined) { temp = { ...temp, softwareliburl: 'Không được để trống đường dẫn' } }
       setValErrors(temp)
     }
 
   }
-  const handleDelet = () => {
-    dispatch(deleteLibs(infoData.softwarelibid))
-    setShowDelete(false)
-  }
+
   const handleHistory = (data) => {
     navigate(`/managements/userHistory/${data}`)
   }
@@ -159,16 +128,17 @@ console.log(checks)
     }
   }
   const handleEdit = (data) => {
+    console.log(data)
     setShowEdit(true)
     setInfo({
-      softwarelibid: data.softwarelibid,
-      softwarelibname: data.softwarelibname,
-      softwareliburl: data.softwareliburl,
-      softwarelibdescription: data.softwarelibdescription,
+      image: data.image_2,
+      full_name: data.full_name,
+      unit: data.unit,
+      date: data.date,
+      time: data.time,
+      result: data.result,
+      description: data.description,
     })
-  }
-  const handleOnChange = (data, pop) => {
-    setInfo({ ...infoData, [pop]: data })
   }
   function isDisable() {
     const o = Object.keys(valErrors)
@@ -214,36 +184,30 @@ console.log(checks)
       selector: row => row.time,
     },
     {
-        name: 'Đơn vị',
-        sortable: true,
-        minWidth: '200px',
-        selector: row => row.unit,
-      },
-      {
-        name: 'Người phụ trách',
-        sortable: true,
-        minWidth: '200px',
-        selector: row => row.user,
-      },
-    // {
-    //   name: 'Tác vụ',
-    //   allowOverflow: true,
-    //   cell: (row) => {
-    //     return (
-    //       <div className='d-flex'>
+      name: 'Đơn vị',
+      sortable: true,
+      minWidth: '200px',
+      selector: row => row.unit,
+    },
+    {
+      name: 'Người phụ trách',
+      sortable: true,
+      minWidth: '200px',
+      selector: row => row.user,
+    },
+    {
+      name: 'Tác vụ',
+      allowOverflow: true,
+      cell: (row) => {
+        return (
+          <div className='d-flex'>
+            <Eye size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
+            {/* <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} /> */}
 
-    //         {
-    //           role === 3 ? <></> : <>
-    //             <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
-    //             <Trash size={15} onClick={() => handleDelete(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
-    //           </>
-
-    //         }
-
-    //       </div>
-    //     )
-    //   }
-    // }
+          </div>
+        )
+      }
+    }
   ]
 
   // ** Function to handle filter
@@ -309,27 +273,27 @@ console.log(checks)
   // ** Custom Pagination
   const CustomPagination = () => (
     <ReactPaginate
-    previousLabel=''
-    nextLabel=''
-    forcePage={currentPage}
-    onPageChange={handlePagination}
-    pageCount={checks.data.metadata.total_pages}
-    breakLabel='...'
-    pageRangeDisplayed={1}
-    marginPagesDisplayed={1}
-    activeClassName='active'
-    pageClassName='page-item'
-    breakClassName='page-item'
-    nextLinkClassName={`page-link ${isLastPage ? 'disabled' : ''}`}
-    pageLinkClassName='page-link'
-    breakLinkClassName='page-link'
-    previousLinkClassName={`page-link ${isFirstPage ? 'disabled' : ''}`}
-    nextClassName='page-item next-item'
-    previousClassName='page-item prev-item'
-    containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
-  />
+      previousLabel=''
+      nextLabel=''
+      forcePage={currentPage}
+      onPageChange={handlePagination}
+      pageCount={checks.data.metadata.total_pages}
+      breakLabel='...'
+      pageRangeDisplayed={1}
+      marginPagesDisplayed={1}
+      activeClassName='active'
+      pageClassName='page-item'
+      breakClassName='page-item'
+      nextLinkClassName={`page-link ${isLastPage ? 'disabled' : ''}`}
+      pageLinkClassName='page-link'
+      breakLinkClassName='page-link'
+      previousLinkClassName={`page-link ${isFirstPage ? 'disabled' : ''}`}
+      nextClassName='page-item next-item'
+      previousClassName='page-item prev-item'
+      containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
+    />
   )
-
+  const containerRef = useRef(null)
   return (
     <Fragment>
       <Card>
@@ -377,108 +341,56 @@ console.log(checks)
         </div>
       </Card>
       <Modal isOpen={showEdit} toggle={() => setShowEdit(!showEdit)} className='modal-dialog-centered modal-lg'>
-        <ModalHeader className='bg-transparent' toggle={() => setShowEdit(!showEdit)}></ModalHeader>
-        <ModalBody className='px-sm-5 mx-50 pb-5'>
-          <div className='text-center mb-2'>
+        <ModalHeader className='bg-transparent' toggle={() => setShowEdit(!showEdit)}>
+        <div className='text-center mb-2'>
             <h1 className='mb-1'>Thông tin chi tiết</h1>
-            <p>Cập nhật chi tiết</p>
+            {/* <p>Thêm chi tiết thông tin</p> */}
           </div>
-          <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibname'>
+        </ModalHeader>
+        <ModalBody className='px-sm-5 mx-50 pb-5'>
+          <Row style={{ backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '10px' }}>
+            {/* Image Section */}
+            <Col lg='5' className='d-flex justify-content-center mb-4'>
+              <img
+                src={`http://127.0.0.1:8000/files/?file_path=${infoData.image}`}
+                alt='Patient Image'
+                style={{
+                  width: '300px', // Smaller width for the image
+                  height: '300px', // Smaller height for the image
+                  objectFit: 'cover', // Ensures the image is contained properly
+                  borderRadius: '15px', // Rounded corners for smoother appearance
+                }}
+              />
+            </Col>
+            <Col lg='2'></Col>
+            {/* Information Section */}
+            <Col lg='5'>
+              <div className='patient-info'>
+                <h5><strong> {infoData.full_name}</strong></h5>
+                <div style={{ marginTop: '20px' }}>
+                  <p><strong>Đơn vị:</strong> {infoData.unit}</p>
+                  <p><strong>Lượt khám:</strong> {infoData.time}</p>
+                  <p><strong>Nhận xét:</strong> {infoData.description}</p>
+                  <p><strong>Ngày:</strong> {infoData.date}</p>
+                  <p><strong>Kết luận:</strong> {infoData.result}</p>
+                  <p><strong>Bác sĩ:</strong> {infoData.user}</p>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </ModalBody>
 
-                Tên thư viện  <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwarelibname' type='text' value={infoData.softwarelibname} onChange={(e) => handleOnChange(e.target.value, "softwarelibname")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwareliburl'>
-                Đường dẫn  <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwareliburl' type='text' value={infoData.softwareliburl} onChange={(e) => handleOnChange(e.target.value, "softwareliburl")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwareliburl}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibdescription'>
-                Mô tả
-              </Label>
-              <Input id='softwarelibdescription' type='text' value={infoData.softwarelibdescription} onChange={(e) => handleOnChange(e.target.value, "softwarelibdescription")} readOnly={edit} />
-            </Col>
-            <Col xs={12} className='text-center mt-2 pt-50'>
-      
-              <Button type='submit' className='me-1' color='primary' onClick={handleUpdate} style={{ display: edit === true ? 'none' : 'inline-block' }}>
-                Cập nhật
-              </Button>
-              <Button type='reset' color='secondary' outline onClick={() => {
-                setEdit(true)
-                setShowEdit(false)
-              }
-              }>
-                Hủy
-              </Button>
-            </Col>
-          </Row>
-        </ModalBody>
       </Modal>
-      <Modal isOpen={showAdd} toggle={() => setShowAdd(!showAdd)} className='modal-dialog-centered modal-lg'>
-        <ModalHeader className='bg-transparent' toggle={() => setShowAdd(!showAdd)}></ModalHeader>
-        <ModalBody className='px-sm-5 mx-50 pb-5'>
-          <div className='text-center mb-2'>
-            <h1 className='mb-1'>Thêm thư viện</h1>
-          </div>
-          <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibname'>
-                Tên thư viện <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwarelibname' type='text' value={infoaddData.softwarelibname} onChange={(e) => handleOnChangeAdd(e.target.value, "softwarelibname")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwarelibname}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibdescription'>
-                Đường dẫn <span style={{ color: 'red' }}>*</span>
-              </Label>
-              <Input id='softwareliburl' type='text' value={infoaddData.softwareliburl} onChange={(e) => handleOnChangeAdd(e.target.value, "softwareliburl")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.softwareliburl}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='softwarelibdescription'>
-                Mô tả
-              </Label>
-              <Input id='softwarelibdescription' type='text' value={infoaddData.softwarelibdescription} onChange={(e) => handleOnChangeAdd(e.target.value, "softwarelibdescription")} />
-            </Col>
-            <Col xs={12} className='text-center mt-2 pt-50'>
-              <Button type='submit' className='me-1' color='primary' onClick={handleAdd} >
-                Thêm mới
-              </Button>
-              <Button type='reset' color='secondary' outline onClick={() => setShowAdd(false)}>
-                Hủy
-              </Button>
-            </Col>
-          </Row>
-        </ModalBody>
-      </Modal>
-      <Modal isOpen={showDelete} toggle={() => setShowDelete(!showDelete)} className='modal-dialog-centered modal-lg'>
-        <ModalHeader className='bg-transparent' toggle={() => setShowDelete(!showDelete)}></ModalHeader>
-        <ModalBody className='px-sm-5 mx-50 pb-5'>
-          <div className='text-center mb-2'>
-            <h1 className='mb-1'>Xóa thư viện</h1>
-            <p>Bạn có muốn xóa thông tin ngay bây giờ không?</p>
-          </div>
-          <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
-            <Col xs={12} className='text-center mt-2 pt-50'>
-              <Button type='reset' className='me-1' color='secondary' onClick={() => setShowDelete(false)}>
-                Hủy
-              </Button>
-              <Button type='submit' color='danger' onClick={handleDelet}>
-                Xóa
-              </Button>
-            </Col>
-          </Row>
-        </ModalBody>
-      </Modal>
-    </Fragment>
+      {/* 
+      <style>
+        {`
+    .react-viewer-inline {
+      min-height: 450px !important;
+    }
+  `}
+      </style> */}
+
+    </Fragment >
   )
 }
 

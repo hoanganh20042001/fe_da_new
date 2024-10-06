@@ -34,7 +34,8 @@ import {
   Modal,
   ModalBody,
   ModalHeader, ModalFooter,
-  Badge
+  Badge,
+  FormGroup
 } from 'reactstrap'
 import { format } from 'prettier'
 
@@ -58,20 +59,23 @@ const ManageAccount = () => {
   const [showAccept, setShowAccept] = useState(false)
   const [infoData, setInfo] = useState({
   })
+  const [searchTerm, setSearchTerm] = useState('')
 
   const [picker, setPicker] = useState(new Date())
   const [object, setObject] = useState(true)
   const [edit, setEdit] = useState(true)
   const [users, setUsers] = useState([])
-  const [infoaddData, setInfoadd] = useState({
+  const [infoAddData, setInfoAdd] = useState({
     id: '',
-    email: null,
-    name: null,
-    password: null,
-    roleid: 3,
-    usrfullname: '',
-    usrdob: '',
-    usrfaculty: ''
+    email: '',
+    name: '',
+    password: '',
+    role_id: 'S',
+    phone_number: '',
+    date_birth: '',
+    sex: 1,
+    rank: '',
+    position: '',
   })
   const [file, setFile] = useState()
   const [valErrors, setValErrors] = useState({
@@ -83,7 +87,7 @@ const ManageAccount = () => {
     usrfaculty: ''
   })
 
-
+  const [units, setUnits] = useState([])
   const dataUser = useSelector((state) => {
     return state.profile.dataUser
   })
@@ -182,7 +186,48 @@ const ManageAccount = () => {
   const handleHistory = (data) => {
     navigate(`/managements/userHistory/${data}`)
   }
+  useEffect(() => {
+    const url = process.env.REACT_APP_API_URL
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `${url}/units/?page_size=100&page=1&sort_by=id&order=desc`,
+          {
+            headers: {
+              'content-type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        )
+        console.log(response.data.data.data)
+        setUnits(response.data.data.data) // Lưu dữ liệu vào state
+      } catch (error) {
+        console.error("Error fetching data", error)
+      }
+    }
 
+    fetchData() // Gọi API khi component mount
+  }, [])
+  const filteredUnits = units
+    .filter(unit => unit.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .map(unit => ({
+      id: unit.id,
+      name: unit.name
+    }))
+  const handleOnChangeSelect = (selectedUnit) => {
+    setInfo({
+      ...infoData,
+      unit_id: selectedUnit?.id,  // Cập nhật unit_id
+      unit_name: selectedUnit?.name  // Cập nhật unit_name
+    })
+  }
+  const handleOnAddSelect = (selectedUnit) => {
+    setInfoAdd({
+      ...infoAddData,
+      unit_id: selectedUnit?.id,  // Cập nhật unit_id
+      unit_name: selectedUnit?.name  // Cập nhật unit_name
+    })
+  }
   const onSubmit = data => {
     if (Object.values(data)) {
       return null
@@ -393,7 +438,11 @@ const ManageAccount = () => {
       containerClassName='pagination react-paginate separated-pagination pagination-sm justify-content-end pe-1 mt-1'
     />
   )
-
+  const formatDate = (datetime) => {
+    if (!datetime) return ''
+    const date = new Date(datetime)
+    return date.toISOString().split('T')[0] // Trả về 'YYYY-MM-DD'
+  }
   return (
     <Fragment>
       <Card>
@@ -447,61 +496,58 @@ const ManageAccount = () => {
             <h1 className='mb-1'>Sửa thông tin người dùng</h1>
             <p>Cập nhật chi tiết thông tin</p>
           </div>
-          <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
+            <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
             <Col md={12} xs={12}>
               <Label className='form-label' for='email'>
                 Email
               </Label>
-              <Input id='email' type='text' value={infoData.email} onChange={(e) => handleOnChange(e.target.value, "email")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.email}</p>
+              <Input id='email' type='text' value={infoAddData.email} onChange={(e) => handleOnChangeAdd(e.target.value, "email")} />
+              
             </Col>
             <Col md={12} xs={12}>
               <Label className='form-label' for='full_name'>
                 Tên người dùng
               </Label>
-              <Input id='name' type='text' value={infoData.full_name} onChange={(e) => handleOnChange(e.target.value, "name")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.name}</p>
+              <Input id='name' type='text' value={infoAddData.full_name} onChange={(e) => handleOnChangeAdd(e.target.value, "full_name")} />
+            
             </Col>
             <Col md={6} xs={12}>
               <Label className='form-label' for='phone_number'>
                 Số điện thoại
               </Label>
-              <Input id='phone_number' type='text' value={infoData.phone_number} onChange={(e) => handleOnChange(e.target.value, "phone_number")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.phone_number}</p>
+              <Input id='phone_number' type='text' value={infoAddData.phone_number} onChange={(e) => handleOnChangeAdd(e.target.value, "phone_number")} />
+              
             </Col>
             <Col md={6} xs={12}>
               <Label className='form-label' for='register-password'>
                 Loại tài khoản
               </Label>
-              <Input type='select' name='role_id' id='role_id' value={infoData.role_id} onChange={(e) => handleOnChange(e.target.value, "roleid")} readOnly={edit}>
+              <Input type='select' name='role_id' id='role_id' value={infoAddData.role_id} onChange={(e) => handleOnChangeAdd(e.target.value, "role_id")}>
+              
+                <option value='N'>Nhân viên</option>
                 <option value='A'>Admin</option>
                 <option value='D'>Bác sĩ</option>
-                <option value='N'>Nhân viên</option>
               </Input>
             </Col>
             <Col md={6} xs={12}>
               <Label className='form-label' for='register-password'>
                 Giới tính
               </Label>
-              <Input type='select' name='sex' id='sex' value={infoData.sex} onChange={(e) => handleOnChange(e.target.value, "roleid")} readOnly={edit}>
+              <Input type='select' name='sex' id='sex' value={infoAddData.sex} onChange={(e) => handleOnChangeAdd(e.target.value, "roleid")}>
                 <option value='1'>Nam</option>
                 <option value='0'>Nữ</option>
               </Input>
             </Col>
             <Col md={6} xs={12}>
-              <Label className='form-label' for='usrdob' >
+              <Label className='form-label' for='date_birth'>
                 Ngày sinh
               </Label>
-              <Flatpickr
-                value={infoData.date_birth}
-                id='date-time-picker'
-                className='form-control'
-                options={{
-                  dateFormat: "Y-m-d",
-                  readOnly: edit
-                }
-                }
-                onChange={date => handleOnChange(toDateStringFormat1(date.toString()), "usrdob")}
+              <Input
+                type="date" // Sử dụng input dạng date
+                id="date_birth"
+                className="form-control"
+                value={formatDate(infoAddData.date_birth)} // Hiển thị ngày dưới dạng 'YYYY-MM-DD'
+                onChange={(e) => handleOnChangeAdd(e.target.value, 'date_birth')} // Cập nhật giá trị khi thay đổi
               />
             </Col>
             <Col md={6} xs={12}>
@@ -511,11 +557,11 @@ const ManageAccount = () => {
               <Input
                 id='rank'
                 type='text'
-                value={infoData.rank}
-                onChange={(e) => handleOnChange(e.target.value, 'rank')}
-                readOnly={edit}
+                value={infoAddData.rank}
+                onChange={(e) => handleOnChangeAdd(e.target.value, 'rank')}
+                
               />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.rank}</p>
+              
             </Col>
             <Col md={6} xs={12}>
               <Label className='form-label' for='position'>
@@ -524,18 +570,34 @@ const ManageAccount = () => {
               <Input
                 id='position'
                 type='text'
-                value={infoData.position}
-                onChange={(e) => handleOnChange(e.target.value, 'position')}
-                readOnly={edit}
+                value={infoAddData.position}
+                onChange={(e) => handleOnChangeAdd(e.target.value, 'position')}
               />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.position}</p>
             </Col>
             <Col md={12} xs={12}>
-              <Label className='form-label' for='usrfaculty'>
-                Đơn vị
-              </Label>
-              <Input id='usrfaculty' type='text' value={infoData.usrfaculty} onChange={(e) => handleOnChange(e.target.value, "usrfaculty")} readOnly={edit} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfaculty}</p>
+              <FormGroup>
+                <Label className='form-label' for='unit'>
+                  Đơn vị
+                </Label>
+                <Input
+                  id='unit'
+                  type='select'
+                  value={infoData.unit_name}
+                  onChange={(e) => {
+                    console.log(e.target.value)
+                    const selectedUnit = filteredUnits.find(unit => unit.id === parseInt(e.target.value))  // Tìm đơn vị
+                    console.log(selectedUnit)
+                    handleOnAddSelect(selectedUnit)
+                  }}
+                >
+                  {/* Hiển thị danh sách các đơn vị */}
+                  {filteredUnits.map(unit => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
             </Col>
             <Col xs={12} className='text-center mt-2 pt-50'>
               <Button type='submit' className='me-1' color='primary' onClick={e => setEdit(false)} style={{ display: edit === true ? 'inline-block' : 'none' }}>
@@ -563,67 +625,106 @@ const ManageAccount = () => {
             <p>Thêm chi tiết thông tin</p>
           </div>
           <Row tag='form' className='gy-1 pt-75' onSubmit={handleSubmit(onSubmit)}>
-          <Col md={12} xs={12}>
+            <Col md={12} xs={12}>
               <Label className='form-label' for='email'>
                 Email
               </Label>
-              <Input id='email' type='text' autoComplete={false} value={infoaddData.email} onChange={(e) => handleOnChangeEmail(e.target.value, "email")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.email}</p>
+              <Input id='email' type='text' value={infoData.email} onChange={(e) => handleOnChange(e.target.value, "email")} />
+              
             </Col>
-             <Col md={12} xs={12}>
-              <Label className='form-label' for='nameUser'>
+            <Col md={12} xs={12}>
+              <Label className='form-label' for='full_name'>
                 Tên người dùng
               </Label>
-              <Input id='nameUser' type='text' value={infoaddData.name} onChange={(e) => handleOnChangeAdd(e.target.value, "name")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.name}</p>
+              <Input id='name' type='text' value={infoData.full_name} onChange={(e) => handleOnChange(e.target.value, "full_name")} />
+            
             </Col>
-           
-           
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='password'>
-                Mật khẩu
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='phone_number'>
+                Số điện thoại
               </Label>
-              <Input id='pass' type='password' value={infoaddData.password} onChange={(e) => handleOnChangeAdd(e.target.value, "password")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.password}</p>
+              <Input id='phone_number' type='text' value={infoData.phone_number} onChange={(e) => handleOnChange(e.target.value, "phone_number")} />
+              
             </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='usrfullname'>
-                Tên đầy đủ
-              </Label>
-              <Input id='usrfullname' type='text' value={infoaddData.usrfullname} onChange={(e) => handleOnChangeAdd(e.target.value, "usrfullname")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfullname}</p>
-            </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='usrdob' >
-                Ngày sinh
-              </Label>
-              <Flatpickr
-                value={picker}
-                options={{
-                  dateFormat: "d-M-Y"
-                }
-                }
-                id='date-time-picker'
-                className='form-control'
-                onChange={date => handleOnChangeAdd(toDateStringFormat1(date.toString()), "usrdob")}
-              />
-            </Col>
-            <Col md={12} xs={12}>
+            <Col md={6} xs={12}>
               <Label className='form-label' for='register-password'>
                 Loại tài khoản
               </Label>
-              <Input type='select' name='role' id='role' value={infoaddData.roleid} onChange={(e) => handleOnChangeAdd(e.target.value, "roleid")} readOnly={edit}>
+              <Input type='select' name='role_id' id='role_id' value={infoData.role_id} onChange={(e) => handleOnChange(e.target.value, "role_id")}>
                 <option value='A'>Admin</option>
                 <option value='D'>Bác sĩ</option>
-                <option value='S'>Nhân viên</option>
+                <option value='N'>Nhân viên</option>
               </Input>
             </Col>
-            <Col md={12} xs={12}>
-              <Label className='form-label' for='usrfaculty'>
-                Đơn vị
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='register-password'>
+                Giới tính
               </Label>
-              <Input id='usrfaculty' type='text' value={infoaddData.usrfaculty} onChange={(e) => handleOnChangeAdd(e.target.value, "usrfaculty")} />
-              <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'red' }}>{valErrors.usrfaculty}</p>
+              <Input type='select' name='sex' id='sex' value={infoData.sex} onChange={(e) => handleOnChange(e.target.value, "roleid")} readOnly={edit}>
+                <option value='1'>Nam</option>
+                <option value='0'>Nữ</option>
+              </Input>
+            </Col>
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='date_birth'>
+                Ngày sinh
+              </Label>
+              <Input
+                type="date" // Sử dụng input dạng date
+                id="date_birth"
+                className="form-control"
+                value={formatDate(infoData.date_birth)} // Hiển thị ngày dưới dạng 'YYYY-MM-DD'
+                onChange={(e) => handleOnChange(e.target.value, 'date_birth')} // Cập nhật giá trị khi thay đổi
+              />
+            </Col>
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='rank'>
+                Quân hàm
+              </Label>
+              <Input
+                id='rank'
+                type='text'
+                value={infoData.rank}
+                onChange={(e) => handleOnChange(e.target.value, 'rank')}
+                
+              />
+              
+            </Col>
+            <Col md={6} xs={12}>
+              <Label className='form-label' for='position'>
+                Chức vụ
+              </Label>
+              <Input
+                id='position'
+                type='text'
+                value={infoData.position}
+                onChange={(e) => handleOnChange(e.target.value, 'position')}
+              />
+            </Col>
+            <Col md={12} xs={12}>
+              <FormGroup>
+                <Label className='form-label' for='unit'>
+                  Đơn vị
+                </Label>
+                <Input
+                  id='unit'
+                  type='select'
+                  defaultValue={filteredUnits.length > 0 ? filteredUnits[0].name : ''}
+                  onChange={(e) => {
+                    console.log(e.target.value)
+                    const selectedUnit = filteredUnits.find(unit => unit.id === parseInt(e.target.value))  // Tìm đơn vị
+                    console.log(selectedUnit)
+                    handleOnAddSelect(selectedUnit)
+                  }}
+                >
+                  {/* Hiển thị danh sách các đơn vị */}
+                  {filteredUnits.map(unit => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
             </Col>
             <Col xs={12} className='text-center mt-2 pt-50'>
               <Button type='submit' className='me-1' color='primary' onClick={handleAdd} disabled={isDisable()}>

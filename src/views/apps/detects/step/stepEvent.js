@@ -26,6 +26,10 @@ import {
     NavLink,
     TabContent,
     TabPane,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader
 } from 'reactstrap'
 import diseases from '../../../../redux/reducers/diseases'
 
@@ -59,6 +63,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
     const viewerRef = useRef(null)
     const [activeTab, setActiveTab] = useState('1')
     const [selectedOption, setSelectedOption] = useState(true)
+    const [showDetail, setShowDetail] = useState(false)
     // const [isLoading, setIsLoading] = useState(false)
     const [download, setDownload] = useState('')
     const [doctorComment, setDoctorComment] = useState('')
@@ -282,7 +287,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                                 noToolbar={false}
                                 changeable={true}
                                 attribute={true}
-                                scalable={false}
+                                scalable={true}
                                 noImgDetails={false}
                                 container={document.getElementById('container')}
                                 className="viewer-container"
@@ -337,13 +342,16 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                                                 </CardTitle>
                                                 <Card
                                                     className="user-info-card shadow-sm"
-                                                    style={{
-                                                        maxHeight: '700px',
-                                                        maxWidth: '300x',
-                                                        overflowY: 'auto',
-                                                    }}
+                                                    // style={{
+                                                    //     maxHeight: '700px',
+                                                    //     maxWidth: '300x',
+                                                    //     overflowY: 'hidden',
+                                                    // }}
                                                 >
-                                                    <CardBody>
+                                                    <CardBody style={{
+                                                        maxHeight: '200px', // Set a maximum height for the card body
+                                                        overflowY: 'auto',  // Enable vertical scrolling when content exceeds max height
+                                                    }}>
                                                         <Row>
                                                             {checkss?.length > 0 ? (
                                                                 <>
@@ -361,7 +369,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                                                                                         borderRadius: '4px',
                                                                                     }}
                                                                                 >
-                                                                                    <strong>{check.name}</strong>
+                                                                                    <strong>{check.name}</strong> - <strong>{check.name_E}</strong>
                                                                                     <div
                                                                                         style={{
                                                                                             display: 'flex',
@@ -416,6 +424,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                                                         margin: '0 auto',  // Căn giữa nút theo chiều ngang
                                                         display: 'block',
                                                     }}
+                                                    onClick={() => setShowDetail(true)}
                                                 >
                                                     <Eye size={16} className="me-2" />
                                                     Xem chi tiết
@@ -482,7 +491,7 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
                                                 color="primary"
                                                 className="mt-2"
                                                 onClick={handleSave} // Implement handleSave to manage saving the comment
-                                                disabled={save}
+                                            // disabled={save}
                                             >
                                                 Lưu
                                             </Button>
@@ -502,7 +511,45 @@ const StepEvent = ({ stepper, info, data1, data2, name, status, changeInfo, chan
           }
         `}
             </style>
+            <Modal isOpen={showDetail} zIndex={1100} toggle={() => setShowDetail(!showDetail)} className='modal-dialog-centered modal-lg'>
+                <ModalHeader className='bg-transparent' toggle={() => setShowDetail(!showDetail)}></ModalHeader>
+                <ModalBody className='px-sm-5 mx-50 pb-5'>
+                    <div className='text-center mb-2'>
+                        <h1 className='mb-1'>Thông tin chi tiết bệnh</h1>
+                        {/* <p>Thêm chi tiết thông tin</p> */}
+                    </div>
+                    <Row tag='form' className='gy-1 pt-75'>
+                        {/* <Col md={12} xs={12}>
 
+                        </Col> */}
+                        <ModalBody>
+                            {checkss?.length > 0 ? (
+                                checkss.map((disease, index) => (
+                                    <Col key={index} md={12} xs={12} style={{ marginBottom: '20px' }}>
+                                        <div>
+                                            <h5>{disease.name} - {disease.name_E}</h5>
+                                            <p><strong>Cách khắc phục:</strong>   {typeof disease.advice === 'string' ? (
+                                                disease.advice.split('.').map((sentence, index) => (
+                                                    <Fragment key={index}>
+                                                        <br />
+                                                        {sentence.trim()}
+
+                                                    </Fragment>
+                                                ))
+                                            ) : (
+                                                disease.advice
+                                            )}</p>
+                                            <hr />
+                                        </div>
+                                    </Col>
+                                ))
+                            ) : (
+                                <p>Không có dữ liệu bệnh.</p>
+                            )}
+                        </ModalBody>
+                    </Row>
+                </ModalBody>
+            </Modal>
         </Fragment >
     )
 }

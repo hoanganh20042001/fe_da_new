@@ -74,6 +74,7 @@ const ManageData = () => {
   const [units, setUnits] = useState([])
   const [unitSearch, setUnitSearch] = useState('')
   const [isSaved, setIsSaved] = useState(false)
+  const [uploadingRowIds, setUploadingRowIds] = useState([])
   const [infoAddData, setInfoAdd] = useState({
     full_name: '',
     email: '',
@@ -130,7 +131,8 @@ const ManageData = () => {
       )
       setShowUpload(false)
     }
-    setUploadingRowId(soldierInfo.cccd)
+    // setUploadingRowId(soldierInfo.cccd)
+    setUploadingRowIds([...uploadingRowIds, soldierInfo.cccd])
     axios.post(`${url}/result/${soldierInfo.cccd}`, data1,
       {
         headers: {
@@ -140,11 +142,16 @@ const ManageData = () => {
 
       }).then(response => {
         setIsSaved(true)
-        setUploadingRowId(null) 
+        // setUploadingRowIds(uploadingRowIds.filter(id => id !== soldierInfo.cccd))
+        dispatch(get({
+          pageSize: 7,
+          page: currentPage + 1,
+        }))
+        // setUploadingRowIds(uploadingRowIds.filter(id => id !== soldierInfo.cccd))
       })
       .catch(err => {
         dispatch(get({
-          pageSize: 9,
+          pageSize: 7,
           page: currentPage + 1,
         }))
       })
@@ -306,54 +313,67 @@ const ManageData = () => {
   const handleOnChangeAdd = (data, pop) => {
     setInfoAdd({ ...infoAddData, [pop]: data })
   }
+
   const handleFileUpload = (file) => {
+    if (!file) {
+      toast(
+        <div className='d-flex'>
+          <div className='me-1'>
+            <Avatar size='sm' color='danger' icon={<X size={12} />} />
+          </div>
+          <div className='d-flex flex-column'>
+            <h6>Chưa chọn file!</h6>
+          </div>
+        </div>
+      )
+      return
+    }
+
     const formData = new FormData()
-    console.log(file)
     formData.append('file', file)
     const url = process.env.REACT_APP_API_URL
-    // Gửi file tới server
-    axios.post(`${url}/excel/import_patients/`, formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          // Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-        },
 
-      }).then(response => {
-        toast(
-          <div className='d-flex'>
-            <div className='me-1'>
-              <Avatar size='sm' color='success' icon={<Check size={14} />} />
-            </div>
-            <div className='d-flex flex-column'>
-              <h6>Tải file thành công.</h6>
-            </div>
+    axios.post(`${url}/excel/import_patients/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        // Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+      }
+    }).then(response => {
+      toast(
+        <div className='d-flex'>
+          <div className='me-1'>
+            <Avatar size='sm' color='success' icon={<Check size={14} />} />
           </div>
-        )
-      })
-      .catch(err => {
-
-        toast(
-          <div className='d-flex'>
-            <div className='me-1'>
-              <Avatar size='sm' color='danger' icon={<X size={12} />} />
-            </div>
-            <div className='d-flex flex-column'>
-              <h6>Có lỗi xảy ra!</h6>
-            </div>
+          <div className='d-flex flex-column'>
+            <h6>Tải file thành công.</h6>
           </div>
-        )
-      })
+        </div>
+      )
+      dispatch(get({
+        pageSize: 7,
+        page: 1,
+      }))
+    }).catch(err => {
+      toast(
+        <div className='d-flex'>
+          <div className='me-1'>
+            <Avatar size='sm' color='danger' icon={<X size={12} />} />
+          </div>
+          <div className='d-flex flex-column'>
+            <h6>Có lỗi xảy ra!</h6>
+          </div>
+        </div>
+      )
+    })
   }
-  const onFileChange = (event) => {
-    const file = event.target.files[0]
-    console.log(file)
-    if (file) {
-      setSelectedFile(file)
-      handleFileUpload(file)  // Gọi hàm upload ngay sau khi chọn file
-    }
+  const onFileChange = (e) => {
+    const file = e.target.files[0]
+    setSelectedFile(file)
+    handleFileUpload(file) // Gọi hàm upload ngay khi file được chọn
   }
-
+  const triggerFileInput = () => {
+    document.getElementById('fileUpload').click() // Kích hoạt việc chọn file
+  }
   const handleAddFile = (e) => {
     document.getElementById('fileUpload').click()
   }
@@ -363,7 +383,7 @@ const ManageData = () => {
       sortable: true,
       minWidth: '50px',
       maxWidth: '100px',
-      selector: (row, index) => index + 1,
+      selector: row => row.stt,
     },
     {
       name: 'Tên quân nhân',
@@ -406,17 +426,21 @@ const ManageData = () => {
       minWidth: '150px',
       selector: row => row.unit_name
     },
-    {
+
+  ]
+  if (role === 'S') {
+    columns.push({
       name: 'Tác vụ',
       allowOverflow: true,
       cell: (row) => {
+        const isLoading = uploadingRowIds.includes(row.identification)
         return (
           <div className='d-flex'>
             <Edit size={15} onClick={() => handleEdit(row)} style={{ cursor: 'pointer', marginLeft: '-18px' }} />
             <Trash size={15} onClick={() => handleDelet(row)} style={{ cursor: 'pointer', marginLeft: '6px' }} />
             {row.status !== false && (
               <>
-                {uploadingRowId === row.identification ? (
+                {isLoading ? (
                   <Spinner size="sm" style={{ marginLeft: '6px' }} /> // Show Spinner if this row is uploading
                 ) : (
                   <Upload
@@ -430,8 +454,8 @@ const ManageData = () => {
           </div>
         )
       }
-    }
-  ]
+    })
+  }
   const handleOnChangeSelect = (selectedUnit) => {
     setInfo({
       ...infoData,
@@ -450,10 +474,10 @@ const ManageData = () => {
   // ** Function to handle Pagination
   const handlePagination = page => {
     setCurrentPage(page.selected)
-    // dispatch(getListUser({
-    //   pageSize: 1,
-    //   pageNumber: page.selected + 1
-    // }))
+    dispatch(get({
+      pageSize: 9,
+      page: page.selected + 1,
+    }))
   }
   const filteredUnits = units
     .filter(unit => unit.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -494,23 +518,23 @@ const ManageData = () => {
       <Card>
         <CardHeader className='flex-md-row flex-column align-md-items-center align-items-start border-bottom'>
           <CardTitle tag='h4' style={{ fontWeight: 'bold', color: '#1203b1' }}>DANH SÁCH QUÂN NHÂN</CardTitle>
-          <div>
+          {role === 'S' ? <div>
             <Input
               type="file"
               id="fileUpload"
-              style={{ display: 'none' }}
-              onChange={onFileChange}
+              style={{ display: 'none' }} // Input file bị ẩn
+              onChange={onFileChange} // Xử lý khi file được chọn
             />
-            <Button color="success" onClick={() => handleAddFile()}>
+            <Button color="success" onClick={triggerFileInput}>
               <UserPlus size={15} style={{ marginRight: '8px' }} />
               Thêm danh sách quân nhân
             </Button>
-          </div>
-          <div className='d-flex mt-md-0 mt-1'>
+          </div> : <></>}
+          {role === 'S' ? <div className='d-flex mt-md-0 mt-1'>
 
             <Button className='ms-2' color='primary' onClick={() => setShowAdd(true)}> <Plus size={15} /> <span className='align-middle ms-50'>Thêm quân nhân</span> </Button>
 
-          </div>
+          </div> : <></>}
         </CardHeader>
         <Row className='justify-content-end mx-0'>
           <Col className='d-flex align-items-center justify-content-end mt-1' md='6' sm='12'>

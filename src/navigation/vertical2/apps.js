@@ -8,38 +8,6 @@ export default [
     icon: <BarChart2 size={20} />,
     navLink: '/dashboard/ecommerce'
   },
-  // {
-  //   id: 'invoiceApp',
-  //   title: 'Bài thí nghiệm',
-  //   icon: <Activity size={20} />,
-  //   navLink: '/apps/invoice/list'
-    // children: [
-    //   {
-    //     id: 'invoiceList',
-    //     title: 'List',
-    //     icon: <Circle size={12} />,
-    //     navLink: '/apps/invoice/list'
-    //   },
-    //   {
-    //     id: 'invoicePreview',
-    //     title: 'Preview',
-    //     icon: <Circle size={12} />,
-    //     navLink: '/apps/invoice/preview'
-    //   },
-    //   {
-    //     id: 'invoiceEdit',
-    //     title: 'Edit',
-    //     icon: <Circle size={12} />,
-    //     navLink: '/apps/invoice/edit'
-    //   },
-    //   {
-    //     id: 'invoiceAdd',
-    //     title: 'Add',
-    //     icon: <Circle size={12} />,
-    //     navLink: '/apps/invoice/add'
-    //   }
-    // ]
-  // },
   {
     id: 'dataUnits',
     title: 'Đơn vị',
@@ -52,12 +20,12 @@ export default [
     icon: <Users size={20} />,
     navLink: '/apps/account'
   },
-  {
-    id: 'dataApp',
-    title: 'Quân nhân',
-    icon: <Shield size={20} />,
-    navLink: '/apps/data/list'
-  },
+  // {
+  //   id: 'dataApp',
+  //   title: 'Quân nhân',
+  //   icon: <Shield size={20} />,
+  //   navLink: '/apps/data/list'
+  // },
   
   {
     id: 'dataModel',

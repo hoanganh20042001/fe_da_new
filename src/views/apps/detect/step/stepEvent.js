@@ -340,7 +340,7 @@ const StepEvent = ({ stepper, cccd, data, status, changeInfo, changeData, change
           {showDetect ? (
             <div className='d-flex mt-md-0 mt-1'>
               <Button className='ms-2' color='primary' onClick={handleDetect}><Search size={15} /> <span className='align-middle ms-50'>Chẩn đoán</span> </Button>
-              {isLoading ? <Loader size={40} style={{ animation: 'spin 1s linear infinite' }} /> : <div></div>}
+              {/* {isLoading ? <Loader size={40} style={{ animation: 'spin 1s linear infinite' }} /> : <div></div>} */}
             </div>
           ) : (
             <Button className='ms-2' color='success' onClick={handleDownloadReport} >

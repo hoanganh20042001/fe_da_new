@@ -208,12 +208,12 @@ const StepConfig = ({ stepper, info, status, changeInfo, changeData1, changeData
             cell: (row) => {
                 return (
                     <div className='d-flex'>
-                        {row.status === null && (
+                        {/* {row.status === null && (
                             <span style={{ color: 'red' }}>Chưa có ảnh</span>
                         )}
                         {row.status === true && (
                             <span style={{ color: 'green' }}>Đã kết luận</span>
-                        )}
+                        )} */}
                         {row.status === false && (
                             <Button
                                 color="primary"

@@ -106,7 +106,7 @@ const MergeLayoutRoutes = (layout, defaultLayout) => {
 }
 
 const getRoutes = layout => {
-  const defaultLayout = layout || 'vertical'
+  const defaultLayout = layout
   const layouts = ['vertical', 'horizontal', 'blank']
 
   const AllRoutes = []
